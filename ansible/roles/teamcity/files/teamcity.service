@@ -1,0 +1,11 @@
+[Unit]
+Description=TeamCity
+After=network.target
+
+[Service]
+Type=forking
+User=teamcity
+ExecStart=/opt/TeamCity/bin/runAll.sh start
+
+[Install]
+WantedBy=multi-user.target

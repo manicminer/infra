@@ -1,0 +1,3 @@
+Host *.manicminer.io
+HashKnownHosts no
+StrictHostKeyChecking no

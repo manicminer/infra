@@ -1,0 +1,36 @@
+{{ server_name }}{% if server_port != 443 %}:{{ server_port }}{% endif %} {
+  tls /etc/ssl/manicminer/fullchain.pem /etc/ssl/manicminer/manicminer.key
+  reverse_proxy {{ 'https://' if proxy_use_https }}{{ proxy_host }}:{{ proxy_port }}{% if proxy_trust_https %} {
+    transport http {
+      tls_insecure_skip_verify
+    }
+  }
+{% endif %}
+
+{% for path, host_port in proxy_paths.items() %}
+  handle_path {{ path }}/* {
+    reverse_proxy {{ host_port }}
+    rewrite * {{ path }}{uri}
+  }
+{% endfor %}
+
+}
+
+{% if allow_http %}
+http://{{ server_name }} {
+  reverse_proxy {{ 'https://' if proxy_use_https }}{{ proxy_host }}:{{ proxy_port }}{% if proxy_trust_https %} {
+    transport http {
+      tls_insecure_skip_verify
+    }
+  }
+{% endif %}
+
+{% for path, host_port in proxy_paths.items() %}
+  handle_path {{ path }}/* {
+    reverse_proxy {{ host_port }}
+    rewrite * {{ path }}{uri}
+  }
+{% endfor %}
+
+}
+{% endif %}

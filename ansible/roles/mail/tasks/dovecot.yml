@@ -1,0 +1,18 @@
+---
+- apt:
+    name:
+      - dovecot-imapd
+      - dovecot-sieve
+    state: present
+
+- template:
+    src: 10-mail.conf.j2
+    dest: /etc/dovecot/conf.d/10-mail.conf
+  notify: restart-dovecot
+
+- service:
+    name: dovecot
+    state: started
+    enabled: yes
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,42 @@
+---
+
+- ansible.builtin.user:
+    name: spacebin
+    home: "{{ home_dir }}"
+    create_home: true
+    groups: docker
+    append: true
+    shell: /bin/bash
+    system: true
+
+- block:
+    - ansible.builtin.file:
+        path: "{{ home_dir }}/docker"
+        mode: '0755'
+        state: directory
+
+    - ansible.builtin.template:
+        src: docker-compose.yml.j2
+        dest: "{{ home_dir }}/docker/docker-compose.yml"
+        mode: '0644'
+      notify: restart-spacebin
+
+  become: true
+  become_user: spacebin
+
+- template:
+    src: spacebin.service.j2
+    dest: /etc/systemd/system/spacebin.service
+  register: spacebin_service
+  notify: restart-spacebin
+
+- shell:
+    cmd: systemctl daemon-reload
+  when: spacebin_service.changed
+
+- service:
+    name: spacebin
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

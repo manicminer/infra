@@ -1,0 +1,224 @@
+---
+- hosts: work
+  roles:
+    - role: letsencrypt
+      tags: letsencrypt
+
+
+- hosts: all:!work
+  tags: rsync
+  tasks:
+    - ansible.builtin.apt:
+        name: rsync
+        state: present
+
+    - ansible.posix.synchronize:
+        archive: yes
+        src: /etc/letsencrypt/
+        dest: /etc/letsencrypt/
+      delegate_to: work
+      register: sync_certs
+
+
+- hosts: work
+  tags: office
+  tasks:
+    - ansible.builtin.shell:
+        cmd: "scp /etc/letsencrypt/live/manicminer.io/{{ item }} admin@office.manicminer.io:"
+      loop:
+        - certstore.p12
+        #- cert.pem
+        #- chain.pem
+        #- privkey.pem
+        #
+    - ansible.builtin.pause:
+        seconds: 2
+
+    - ansible.builtin.shell:
+        cmd: "ssh admin@office.manicminer.io certificate import file-name=certstore.p12"
+
+
+- hosts: bitwarden
+  tasks:
+    - ansible.builtin.copy:
+        src: "/etc/letsencrypt/live/manicminer.io/{{ item.key }}"
+        dest: "/opt/bitwarden/bwdata/ssl/{{ item.value }}"
+        remote_src: true
+      with_dict:
+        fullchain.pem: certificate.crt
+        chain.pem: ca.crt
+        privkey.pem: private.key
+      when: sync_certs.changed
+      register: copy_certs
+
+    - ansible.builtin.shell:
+        cmd: /opt/bitwarden/bitwarden.sh restart
+      become: true
+      become_user: bitwarden
+      when: copy_certs.changed
+
+
+- hosts: graphdev
+  tasks:
+    - ansible.builtin.file:
+        path: /home/tom/ssl
+        owner: tom
+        group: docker
+        mode: '0750'
+        state: directory
+
+    - ansible.builtin.copy:
+        src: /etc/letsencrypt/live/manicminer.io/certstore.p12
+        dest: /home/tom/ssl/bundle.pfx
+        owner: tom
+        group: tom
+        mode: '0600'
+        remote_src: true
+      when: sync_certs.changed
+
+    - ansible.builtin.file:
+        path: /home/tom/ssl/bundle.pfx
+        owner: tom
+        group: docker
+        mode: '0640'
+
+
+- hosts: influxdb
+  tasks:
+    - ansible.builtin.copy:
+        src: "/etc/letsencrypt/live/manicminer.io/{{ item }}"
+        dest: "/etc/influxdb/{{ item }}"
+        remote_src: true
+        owner: influxdb
+        group: influxdb
+      with_items:
+        - fullchain.pem
+        - privkey.pem
+      when: sync_certs.changed
+      register: copy_certs
+
+    - ansible.builtin.service:
+        name: influxdb
+        state: restarted
+      when: copy_certs.changed
+
+
+- hosts: io,vpn
+  tasks:
+    - ansible.builtin.shell:
+        cmd: /usr/local/openvpn_as/scripts/sacli --key "{{ item.key }}" --value_file "/etc/letsencrypt/live/manicminer.io/{{ item.value }}" ConfigPut
+      loop: "{{ safiles | dict2items }}"
+      vars:
+        safiles:
+          cs.priv_key: privkey.pem
+          cs.cert: cert.pem
+          cs.ca_bundle: chain.pem
+      when: sync_certs.changed
+
+    - ansible.builtin.service:
+        name: openvpnas
+        state: restarted
+      when: sync_certs.changed
+
+
+- hosts: io,pihole
+  tasks:
+    - ansible.builtin.service:
+        name: lighttpd
+        state: restarted
+      when: sync_certs.changed
+
+
+- hosts: rabbitmq
+  tasks:
+    - ansible.builtin.service:
+        name: rabbitmq-server
+        state: restarted
+      when: sync_certs.changed
+
+
+- hosts: unifi
+  tasks:
+    - ansible.builtin.shell:
+        cmd: openssl pkcs12 -export -out unifi.pfx -inkey /etc/letsencrypt/live/manicminer.io/privkey.pem -in /etc/letsencrypt/live/manicminer.io/cert.pem -certfile /etc/letsencrypt/live/manicminer.io/chain.pem -name unifi -passout pass:aircontrolenterprise
+      when: sync_certs.changed
+
+    - ansible.builtin.shell:
+        cmd: keytool -importkeystore -srckeystore /root/unifi.pfx -srcstoretype pkcs12 -srcstorepass aircontrolenterprise -destkeystore /var/lib/unifi/keystore -deststoretype jks -deststorepass aircontrolenterprise -noprompt
+      when: sync_certs.changed
+
+    - ansible.builtin.service:
+        name: unifi
+        state: restarted
+      when: sync_certs.changed
+
+
+- hosts: grafana,files,influxdb,postgres,syncthing
+  tasks:
+    - ansible.builtin.service:
+        name: nginx
+        state: restarted
+      when: sync_certs.changed
+
+
+- hosts: auth,callisto,emby,europa,gitea,iot-proxy,photos,rabbitmq
+  tags: caddy
+  tasks:
+    - ansible.builtin.copy:
+        src: "/etc/letsencrypt/live/manicminer.io/{{ item }}"
+        dest: "/etc/caddy/{{ item }}"
+        mode: '0440'
+        owner: caddy
+        group: root
+        remote_src: true
+      loop:
+        - fullchain.pem
+        - privkey.pem
+      when: sync_certs.changed
+
+    - ansible.builtin.service:
+        name: caddy
+        state: restarted
+      when: sync_certs.changed
+
+
+- hosts: adguard,adguard-kids
+  tasks:
+    - ansible.builtin.service:
+        name: AdGuardHome
+        state: restarted
+      when: sync_certs.changed
+
+
+- hosts: mdm
+  gather_facts: false
+  vars:
+    ansible_become_method: runas
+    ansible_shell_type: powershell
+    ansible_user: Administrator
+
+  tasks:
+    - name: test powershell
+      win_shell: |
+        get-host
+      register: result_get_host
+
+    - name: display result_get_host
+      debug:
+        var: result_get_host
+
+    - win_file:
+        path: c:\ssl
+        state: directory
+
+    - win_copy:
+        src: "/etc/letsencrypt/live/manicminer.io/{{ item }}"
+        dest: "c:\\ssl\\{{ item }}"
+        remote_src: true
+      with_items:
+        - fullchain.pem
+        - privkey.pem
+        #      when: sync_certs.changed
+      register: copy_certs
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

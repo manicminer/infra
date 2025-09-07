@@ -1,0 +1,92 @@
+---
+
+- ansible.builtin.file:
+    path: /var/local/maxmind
+    owner: root
+    group: root
+    mode: '0755'
+    state: directory
+
+- ansible.builtin.tempfile:
+    state: directory
+  register: geolite2_tmp
+
+- ansible.builtin.get_url:
+    url: "https://download.maxmind.com/geoip/databases/GeoLite2-ASN/download?suffix=tar.gz"
+    dest: /tmp/GeoLite2-ASN.tar.gz
+    url_username: "{{ maxmind.account_id }}"
+    url_password: "{{ maxmind.license_key }}"
+
+- ansible.builtin.unarchive:
+    src: /tmp/GeoLite2-ASN.tar.gz
+    dest: "{{ geolite2_tmp.path }}"
+    remote_src: true
+
+- ansible.builtin.find:
+    paths: "{{ geolite2_tmp.path }}"
+    patterns: GeoLite2-ASN.mmdb
+    recurse: true
+  register: geolite2_asn_mmdb
+
+- ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: /var/local/maxmind/GeoLite2-ASN.mmdb
+    remote_src: true
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ geolite2_asn_mmdb.files }}"
+
+- ansible.builtin.get_url:
+    url: "https://download.maxmind.com/geoip/databases/GeoLite2-City/download?suffix=tar.gz"
+    dest: /tmp/GeoLite2-City.tar.gz
+    url_username: "{{ maxmind.account_id }}"
+    url_password: "{{ maxmind.license_key }}"
+
+- ansible.builtin.unarchive:
+    src: /tmp/GeoLite2-City.tar.gz
+    dest: "{{ geolite2_tmp.path }}"
+    remote_src: true
+
+- ansible.builtin.find:
+    paths: "{{ geolite2_tmp.path }}"
+    patterns: GeoLite2-City.mmdb
+    recurse: true
+  register: geolite2_city_mmdb
+
+- ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: /var/local/maxmind/GeoLite2-City.mmdb
+    remote_src: true
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ geolite2_city_mmdb.files }}"
+
+- ansible.builtin.get_url:
+    url: "https://download.maxmind.com/geoip/databases/GeoLite2-Country/download?suffix=tar.gz"
+    dest: /tmp/GeoLite2-Country.tar.gz
+    url_username: "{{ maxmind.account_id }}"
+    url_password: "{{ maxmind.license_key }}"
+
+- ansible.builtin.unarchive:
+    src: /tmp/GeoLite2-Country.tar.gz
+    dest: "{{ geolite2_tmp.path }}"
+    remote_src: true
+
+- ansible.builtin.find:
+    paths: "{{ geolite2_tmp.path }}"
+    patterns: GeoLite2-Country.mmdb
+    recurse: true
+  register: geolite2_country_mmdb
+
+- ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: /var/local/maxmind/GeoLite2-Country.mmdb
+    remote_src: true
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ geolite2_country_mmdb.files }}"
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

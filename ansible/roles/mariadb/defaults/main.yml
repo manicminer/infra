@@ -1,0 +1,5 @@
+---
+
+mariadb_version: 11.5
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

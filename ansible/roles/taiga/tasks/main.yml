@@ -1,0 +1,87 @@
+---
+
+- ansible.builtin.user:
+    name: taiga
+    home: "{{ home_dir }}"
+    create_home: true
+    groups: docker
+    append: true
+    shell: /bin/bash
+    system: true
+
+- block:
+    - ansible.builtin.file:
+        path: "{{ home_dir }}/docker"
+        mode: '0755'
+        state: directory
+
+    - ansible.builtin.template:
+        src: docker-compose.yml.j2
+        dest: "{{ home_dir }}/docker/docker-compose.yml"
+        mode: '0644'
+      notify: restart-taiga
+
+    - ansible.builtin.template:
+        src: Dockerfile.taiga-back.j2
+        dest: "{{ home_dir }}/docker/Dockerfile.taiga-back"
+        mode: '0644'
+      notify: restart-taiga
+
+    - ansible.builtin.template:
+        src: Dockerfile.taiga-front.j2
+        dest: "{{ home_dir }}/docker/Dockerfile.taiga-front"
+        mode: '0644'
+      notify: restart-taiga
+
+    - ansible.builtin.template:
+        src: env.j2
+        dest: "{{ home_dir }}/docker/.env"
+        mode: '0600'
+      notify: restart-taiga
+
+    - ansible.builtin.template:
+        src: config.py.j2
+        dest: "{{ home_dir }}/docker/config.py"
+        mode: '0600'
+      notify: restart-taiga
+
+    - ansible.builtin.template:
+        src: conf.json.j2
+        dest: "{{ home_dir }}/docker/conf.json"
+        mode: '0644'
+
+    - ansible.builtin.template:
+        src: nginx.conf.j2
+        dest: "{{ home_dir }}/docker/nginx.conf"
+        mode: '0644'
+
+    - ansible.builtin.copy:
+        src: taiga-manage.sh
+        dest: "{{ home_dir }}/docker/taiga-manage.sh"
+        mode: '0755'
+
+    - ansible.builtin.git:
+        repo: "https://github.com/fabianmp/taiga-contrib-oidc-auth"
+        dest: "{{ home_dir }}/docker/taiga-contrib-oidc-auth"
+        version: "{{ taiga_versions.front }}+fabianmp.0.1.0"
+      notify: restart-taiga
+
+  become: true
+  become_user: taiga
+
+- template:
+    src: taiga.service.j2
+    dest: /etc/systemd/system/taiga.service
+  register: taiga_service
+  notify: restart-taiga
+
+- shell:
+    cmd: systemctl daemon-reload
+  when: taiga_service.changed
+
+- service:
+    name: taiga
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

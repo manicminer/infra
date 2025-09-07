@@ -1,0 +1,31 @@
+[Unit]
+Description=pgAdmin4 
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+User=pgadmin
+StateDirectory=pgadmin
+RuntimeDirectory=pgadmin4
+LogsDirectory=pgadmin
+Environment="SCRIPT_NAME=/"
+ExecStart=uwsgi \
+      --socket /run/pgadmin4/pgadmin4.sock --chmod-socket=666 \
+      --plugin python3 \
+      -H /usr/pgadmin4/venv \
+      --wsgi-file /usr/pgadmin4/web/pgAdmin4.wsgi \
+      --processes 1 \
+      --threads 25 \
+      --chdir /usr/pgadmin4/web/ \
+      --manage-script-name \
+      --mount /=pgAdmin4:app
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -INT $MAINPID
+Restart=always
+Type=notify
+StandardError=syslog
+NotifyAccess=all
+KillSignal=SIGQUIT
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,32 @@
+---
+- apt_key:
+    url: https://repos.influxdata.com/influxdata-archive_compat.key
+    state: present
+
+- apt_repository:
+    repo: "deb https://repos.influxdata.com/ubuntu {{ ansible_facts['distribution_release'] }} stable"
+    update_cache: yes
+    state: present
+
+- apt:
+    name:
+      - influxdb2
+      - influxdb2-cli
+    state: present
+
+- copy:
+    src: config.toml
+    dest: /etc/influxdb/config.toml
+  notify: restart-influxdb
+
+- copy:
+    src: config.yaml
+    dest: /etc/influxdb/config.yaml
+  notify: restart-influxdb
+
+- service:
+    name: influxdb
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

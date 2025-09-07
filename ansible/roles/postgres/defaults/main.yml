@@ -1,0 +1,11 @@
+---
+
+postgres_version: 17
+postgres_listen_addresses:
+  - "*"
+postgres_port: 5432
+
+postgres_allow_networks: []
+postgresql_overrides: {}
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,10 @@
+---
+- hosts: plausible
+  roles:
+    - docker
+    - plausible
+
+    - role: nginx
+      proxy_port: 8000
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

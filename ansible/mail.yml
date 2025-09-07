@@ -1,0 +1,12 @@
+---
+- hosts: mail
+  roles:
+    - role: mail
+      tags: mail
+
+  tasks:
+    - user:
+        name: tom
+        state: present
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

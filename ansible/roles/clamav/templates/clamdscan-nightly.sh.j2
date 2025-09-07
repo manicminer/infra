@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Download sample to trigger detection
+#wget -q https://secure.eicar.org/eicar.com.txt -O {{ clamav_scan_paths[0] }}/sample.txt
+
+# Create temporary directory for results
+TMPDIR="$(mktemp -d)"
+
+# Run the scan, report to stdout and ignore the header line
+/usr/bin/clamdscan --fdpass --infected --no-summary --stdout --log=/var/log/clamav/clamdscan.log --move=/root/quarantine {{ clamav_scan_paths | join(' ') }} 2>&1 | grep -v '\--------------------------------------' >"${TMPDIR}/report.txt"
+
+# Mail the report if non-empty
+if [[ -s "${TMPDIR}/report.txt" ]]; then
+  cat << EOF >"${TMPDIR}/message.txt"
+To: <{{ clamav_mail_recipient }}>
+From: clamav <clamav@{{ ansible_facts['fqdn'] }}>
+Subject: malware detected on {{ ansible_facts['fqdn'] }}
+clamav found the following potential malware signatures and quarantined them.
+
+$(cat "${TMPDIR}/report.txt")
+EOF
+
+  sendmail -f clamav@{{ ansible_facts['fqdn'] }} {{ clamav_mail_recipient }} <"${TMPDIR}/message.txt"
+fi
+
+# vim: set ft=bash ts=2 sts=2 sw=2 et:

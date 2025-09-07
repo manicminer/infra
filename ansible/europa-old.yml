@@ -1,0 +1,224 @@
+---
+- hosts: europa
+  roles:
+    - role: letsencrypt-certs
+      tags: letsencrypt-certs
+
+    - role: postfix
+      tags: postfix
+
+    - role: clamav
+      tags: clamav
+      clamav_scan_paths:
+        - /home
+        - /opt
+
+    - role: docker
+      tags: docker
+
+    - role: maxmind
+      tags: maxmind
+
+    - role: mongodb
+      tags: mongodb
+      mongodb_expired_signing_key: true
+
+    - role: rabbitmq
+      tags: rabbitmq
+
+    - role: postgres
+      tags: postgres
+
+
+- hosts: europa
+  tags: postgres
+  become: yes
+  become_user: postgres
+  tasks:
+    - community.postgresql.postgresql_user:
+        name: pgadmin
+        role_attr_flags: SUPERUSER
+
+    - community.postgresql.postgresql_user:
+        name: mattermost
+        password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          64323639646165383339333966306332363665343462316437666335343038316133626165643135
+          3931333735313662303535316630656466326362323065360a326235326533316233386133336337
+          34613562376139383632656438656263316565663630363665623231383966393562316265626239
+          6465353463356563650a343234376236323465376632373331386131666366356634333161623665
+          62383639666537363635653038643964633830633563656639393838346530353335
+      tags: mattermost
+
+    - community.postgresql.postgresql_db:
+        name: mattermost
+        owner: mattermost
+        template: template0
+        encoding: UTF8
+        lc_collate: en_US.UTF-8
+        lc_ctype: en_US.UTF-8
+      tags: mattermost
+
+    - community.postgresql.postgresql_user:
+        name: openproject
+        password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          35646230616163626135376332653863346433366666383062323431393561653664393931343764
+          6337346339666539366162626636633635336236366439610a346632333330656262633930626336
+          31636534326437333238303537346434313165316337336263303361653730306634326561666638
+          6462353733326362390a633336343139316566323235623633646632343831633265396666333234
+          62616637636165393062306362313962336266663834613538393430363534666334
+      tags: openproject
+
+    - community.postgresql.postgresql_db:
+        name: openproject
+        owner: openproject
+        template: template0
+        encoding: UTF8
+        lc_collate: en_US.UTF-8
+        lc_ctype: en_US.UTF-8
+      tags: openproject
+
+    - community.postgresql.postgresql_user:
+        name: spacebin
+        password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          39363634303365313739643439613433306537373064623430373735643432333131663862626465
+          6435633434636261646464646334336239303831636564330a346462663437303265616463376631
+          61366533626433336561613838343239653139646231303530653962383836666439383663313561
+          6332393266626131660a663136323632666665613062636139333862326237663835366533326139
+          62306131666130336266636130376465616132626166323165343065633834633364
+      tags: spacebin
+
+    - community.postgresql.postgresql_db:
+        name: spacebin
+        owner: spacebin
+        template: template0
+        encoding: UTF8
+        lc_collate: en_US.UTF-8
+        lc_ctype: en_US.UTF-8
+      tags: spacebin
+
+    - community.postgresql.postgresql_user:
+        name: taiga
+        password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          39643061383538303535643334663932383665336333316331646632346666636666643932383930
+          3031313833626336343633616566333832393464643135330a356230636134333333626462383465
+          64643263323837323462636433313064616437616436323065633338333030373932346331356332
+          6264393635306563310a303233333833613437396133316532306261336665626663626635633038
+          39626565323435616131336363383531393765326534336234326565343564656535
+      tags: taiga
+
+    - community.postgresql.postgresql_db:
+        name: taiga
+        owner: taiga
+        template: template0
+        encoding: UTF8
+        lc_collate: en_US.UTF-8
+        lc_ctype: en_US.UTF-8
+      tags: taiga
+
+
+- hosts: europa
+  roles:
+
+    - role: echoip
+      tags: echoip
+
+    - role: heimdall
+      tags: heimdall
+
+    - role: mattermost
+      tags: mattermost
+      server_name: m.manicminer.io
+
+    - role: openproject
+      tags: openproject
+      server_name: op.manicminer.io
+
+    - role: opensign
+      tags: opensign
+      server_name: os.manicminer.io
+
+    - role: spacebin
+      tags: spacebin
+
+    - role: taiga
+      tags: taiga
+
+
+- hosts: europa
+  tags: caddy
+  roles:
+
+    - role: caddy
+      tags: caddy
+      enable_fqdn_static: true
+
+    - role: caddy-proxy
+      tags: echoip
+      site_name: echoip
+      server_name: ip.manicminer.io
+      proxy_port: 9005
+      allow_http: true
+
+    - role: caddy-proxy
+      tags: echoip
+      site_name: echoip4
+      server_name: ip4.manicminer.io
+      proxy_port: 9005
+      allow_http: true
+
+    - role: caddy-proxy
+      tags: echoip
+      site_name: echoip6
+      server_name: ip6.manicminer.io
+      proxy_port: 9005
+      allow_http: true
+
+    - role: caddy-proxy
+      tags: heimdall
+      site_name: heimdall
+      server_name: home.manicminer.io
+      proxy_port: 9004
+
+    - role: caddy-proxy
+      tags: mattermost
+      site_name: mattermost
+      server_name: m.manicminer.io
+      proxy_port: 8065
+
+    - role: caddy-proxy
+      tags: openproject
+      site_name: openproject
+      server_name: op.manicminer.io
+      proxy_port: 6000
+
+    - role: caddy-proxy
+      tags: opensign
+      site_name: opensign
+      server_name: os.manicminer.io
+      proxy_port: 9003
+      proxy_paths:
+        '/app': "localhost:9002"
+
+    - role: caddy-proxy
+      tags: rabbitmq
+      site_name: rabbitmq
+      proxy_port: 15672
+      server_port: 444
+
+    - role: caddy-proxy
+      tags: spacebin
+      site_name: spacebin
+      server_name: sb.manicminer.io
+      proxy_port: 9001
+
+    - role: caddy-proxy
+      tags: taiga
+      site_name: taiga
+      server_name: taiga.manicminer.io
+      proxy_port: 9000
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

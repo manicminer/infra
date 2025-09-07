@@ -1,0 +1,13 @@
+---
+- hosts: all
+  tags: munin-node
+  roles:
+    - role: munin
+
+- hosts: munin
+  tags: munin
+  roles:
+    - role: munin
+      server: true
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

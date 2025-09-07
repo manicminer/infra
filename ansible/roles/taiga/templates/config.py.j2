@@ -1,0 +1,240 @@
+# -*- coding: utf-8 -*-
+import os
+
+from .common import *   # noqa, pylint: disable=unused-wildcard-import
+
+#########################################
+## GENERIC
+#########################################
+
+DEBUG = False
+
+ADMINS = (
+    ("Tom Bamford", "tom@bamford.io"),
+)
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': '{{ postgresql.db }}',
+        'USER': '{{ postgresql.user }}',
+        'PASSWORD': '{{ postgresql.pass }}',
+        'HOST': '{{ postgresql.host }}',
+        'PORT': '5432',
+    }
+}
+
+SECRET_KEY = "{{ taiga.secret_key }}"
+
+TAIGA_SITES_SCHEME = "https"
+TAIGA_SITES_DOMAIN = "{{ taiga.server_name }}"
+FORCE_SCRIPT_NAME = ""
+
+TAIGA_URL = f"{ TAIGA_SITES_SCHEME }://{ TAIGA_SITES_DOMAIN }{ FORCE_SCRIPT_NAME }"
+SITES = {
+        "api": { "name": "api", "scheme": TAIGA_SITES_SCHEME, "domain": TAIGA_SITES_DOMAIN },
+        "front": { "name": "front", "scheme": TAIGA_SITES_SCHEME, "domain": f"{ TAIGA_SITES_DOMAIN }{ FORCE_SCRIPT_NAME }" }
+}
+
+# Setting DEFAULT_PROJECT_SLUG_PREFIX to false
+# removes the username from project slug
+DEFAULT_PROJECT_SLUG_PREFIX = False
+
+#########################################
+## MEDIA AND STATIC
+#########################################
+
+# MEDIA_ROOT = '/home/taiga/media'
+MEDIA_URL = f"{ TAIGA_URL }/media/"
+DEFAULT_FILE_STORAGE = "taiga_contrib_protected.storage.ProtectedFileSystemStorage"
+THUMBNAIL_DEFAULT_STORAGE = DEFAULT_FILE_STORAGE
+
+# STATIC_ROOT = '/home/taiga/static'
+STATIC_URL = f"{ TAIGA_URL }/static/"
+
+#########################################
+## EMAIL
+#########################################
+# https://docs.djangoproject.com/en/3.1/topics/email/
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+CHANGE_NOTIFICATIONS_MIN_INTERVAL = 120  # seconds
+
+DEFAULT_FROM_EMAIL = "no-reply@{{ ansible_facts['fqdn'] }}"
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST = '{{ taiga.smtp_host }}'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = '{{ taiga.smtp_user }}'
+EMAIL_HOST_PASSWORD = '{{ taiga.smtp_pass }}'
+
+#########################################
+## EVENTS
+#########################################
+EVENTS_PUSH_BACKEND = "taiga.events.backends.rabbitmq.EventsPushBackend"
+EVENTS_PUSH_BACKEND_OPTIONS = {
+    "url": "amqp://{{ taiga.rabbitmq_user }}:{{ taiga.rabbitmq_pass }}@{{ taiga.rabbitmq_host }}:5672/{{ taiga.rabbitmq_vhost }}"
+}
+
+
+#########################################
+## TAIGA ASYNC
+#########################################
+CELERY_ENABLED = os.getenv('CELERY_ENABLED', 'True') == 'True'
+
+from kombu import Queue  # noqa
+
+CELERY_BROKER_URL = "amqp://{{ taiga.rabbitmq_user }}:{{ taiga.rabbitmq_pass }}@{{ taiga.rabbitmq_host }}:5672/{{ taiga.rabbitmq_vhost }}"
+CELERY_RESULT_BACKEND = None # for a general installation, we don't need to store the results
+CELERY_ACCEPT_CONTENT = ['pickle', ]  # Values are 'pickle', 'json', 'msgpack' and 'yaml'
+CELERY_TASK_SERIALIZER = "pickle"
+CELERY_RESULT_SERIALIZER = "pickle"
+CELERY_TIMEZONE = 'Europe/Madrid'
+CELERY_TASK_DEFAULT_QUEUE = 'tasks'
+CELERY_QUEUES = (
+    Queue('tasks', routing_key='task.#'),
+    Queue('transient', routing_key='transient.#', delivery_mode=1)
+)
+CELERY_TASK_DEFAULT_EXCHANGE = 'tasks'
+CELERY_TASK_DEFAULT_EXCHANGE_TYPE = 'topic'
+CELERY_TASK_DEFAULT_ROUTING_KEY = 'task.default'
+
+
+#########################################
+## CONTRIBS
+#########################################
+INSTALLED_APPS += [
+#    "taiga_contrib_slack",
+#    "taiga_contrib_github_auth",
+#    "taiga_contrib_gitlab_auth",
+    "mozilla_django_oidc",
+    "taiga_contrib_oidc_auth",
+]
+#
+# GITHUB_API_CLIENT_ID = "changeme"
+# GITHUB_API_CLIENT_SECRET = "changeme"
+#
+# GITLAB_API_CLIENT_ID = "changeme"
+# GITLAB_API_CLIENT_SECRET = "changeme"
+# GITLAB_URL = "changeme"
+
+AUTHENTICATION_BACKENDS = list(AUTHENTICATION_BACKENDS) + [
+    "taiga_contrib_oidc_auth.oidc.TaigaOIDCAuthenticationBackend",
+]
+
+ENABLE_OIDC_AUTH = True
+ROOT_URLCONF = "settings.urls"
+
+OIDC_CALLBACK_CLASS = "taiga_contrib_oidc_auth.views.TaigaOIDCAuthenticationCallbackView"
+OIDC_RP_SCOPES = "openid profile email"
+OIDC_RP_SIGN_ALGO = "RS256"
+OIDC_BASE_URL = "https://auth.manicminer.io/application/o/taiga/" # issuer
+OIDC_OP_JWKS_ENDPOINT = "https://auth.manicminer.io/application/o/taiga/jwks/"
+OIDC_OP_AUTHORIZATION_ENDPOINT = "https://auth.manicminer.io/application/o/authorize/"
+OIDC_OP_TOKEN_ENDPOINT = "https://auth.manicminer.io/application/o/token/"
+OIDC_OP_USER_ENDPOINT = "https://auth.manicminer.io/application/o/userinfo/"
+OIDC_RP_CLIENT_ID = "{{ taiga.oidc_rp_client_id }}"
+OIDC_RP_CLIENT_SECRET = "{{ taiga.oidc_rp_client_secret }}"
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+#########################################
+## TELEMETRY
+#########################################
+
+ENABLE_TELEMETRY = False
+
+#########################################
+##  REGISTRATION
+#########################################
+
+PUBLIC_REGISTER_ENABLED = False
+
+#########################################
+## THROTTLING
+#########################################
+
+#REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {
+#    "anon-write": "20/min",
+#    "user-write": None,
+#    "anon-read": None,
+#    "user-read": None,
+#    "import-mode": None,
+#    "import-dump-mode": "1/minute",
+#    "create-memberships": None,
+#    "login-fail": None,
+#    "register-success": None,
+#    "user-detail": None,
+#    "user-update": None,
+#}
+
+# This list should contain:
+#  - Taiga users IDs
+#  - Valid clients IP addresses (X-Forwarded-For header)
+#REST_FRAMEWORK["DEFAULT_THROTTLE_WHITELIST"] = []
+
+# LIMIT ALLOWED DOMAINS FOR REGISTER AND INVITE
+# None or [] values in USER_EMAIL_ALLOWED_DOMAINS means allow any domain
+#USER_EMAIL_ALLOWED_DOMAINS = None
+
+# PUBLIC OR PRIVATE NUMBER OF PROJECT PER USER
+#MAX_PRIVATE_PROJECTS_PER_USER = None # None == no limit
+#MAX_PUBLIC_PROJECTS_PER_USER = None # None == no limit
+#MAX_MEMBERSHIPS_PRIVATE_PROJECTS = None # None == no limit
+#MAX_MEMBERSHIPS_PUBLIC_PROJECTS = None # None == no limit
+
+
+#########################################
+## SITEMAP
+#########################################
+
+# If is True /front/sitemap.xml show a valid sitemap of taiga-front client
+#FRONT_SITEMAP_ENABLED = False
+#FRONT_SITEMAP_CACHE_TIMEOUT = 24*60*60  # In second
+
+
+#########################################
+## FEEDBACK
+#########################################
+
+# Note: See config in taiga-front too
+FEEDBACK_ENABLED = False
+#FEEDBACK_EMAIL = "support@taiga.io"
+
+
+#########################################
+## STATS
+#########################################
+
+STATS_ENABLED = False
+#STATS_CACHE_TIMEOUT = 60*60  # In second
+
+
+#########################################
+## IMPORTERS
+#########################################
+
+# Configuration for the GitHub importer
+# Remember to enable it in the front client too.
+#IMPORTERS["github"] = {
+#    "active": True,
+#    "client_id": "XXXXXX_get_a_valid_client_id_from_github_XXXXXX",
+#    "client_secret": "XXXXXX_get_a_valid_client_secret_from_github_XXXXXX"
+#}
+
+# Configuration for the Trello importer
+# Remember to enable it in the front client too.
+#IMPORTERS["trello"] = {
+#    "active": True, # Enable or disable the importer
+#    "api_key": "XXXXXX_get_a_valid_api_key_from_trello_XXXXXX",
+#    "secret_key": "XXXXXX_get_a_valid_secret_key_from_trello_XXXXXX"
+#}
+
+# Configuration for the Jira importer
+# Remember to enable it in the front client too.
+#IMPORTERS["jira"] = {
+#    "active": True, # Enable or disable the importer
+#    "consumer_key": "XXXXXX_get_a_valid_consumer_key_from_jira_XXXXXX",
+#    "cert": "XXXXXX_get_a_valid_cert_from_jira_XXXXXX",
+#    "pub_cert": "XXXXXX_get_a_valid_pub_cert_from_jira_XXXXXX"
+#}

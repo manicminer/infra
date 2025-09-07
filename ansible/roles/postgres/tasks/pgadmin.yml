@@ -1,0 +1,49 @@
+---
+
+- deb822_repository:
+    name: pgadmin
+    types: deb
+    uris: "https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/{{ ansible_facts['distribution_release'] }}"
+    suites: pgadmin4
+    components: main
+    architectures: amd64
+    signed_by: "https://www.pgadmin.org/static/packages_pgadmin_org.pub"
+
+- apt:
+    name:
+      - pgadmin4-server
+      - uwsgi-plugin-python3
+    update_cache: true
+    state: present
+
+- user:
+    name: pgadmin
+    home: /var/lib/pgadmin4
+    shell: /bin/false
+    state: present
+
+- file:
+    path: /etc/pgadmin
+    state: directory
+
+- template:
+    src: config_system.py.j2
+    dest: /etc/pgadmin/config_system.py
+  notify: restart-pgadmin
+
+- template:
+    src: pgadmin4.service.j2
+    dest: /etc/systemd/system/pgadmin4.service
+  notify: restart-pgadmin
+  register: pgadmin4_service
+
+- shell:
+    cmd: systemctl daemon-reload
+  when: pgadmin4_service.changed
+
+- service:
+    name: pgadmin4
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

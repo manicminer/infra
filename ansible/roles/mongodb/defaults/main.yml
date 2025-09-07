@@ -1,0 +1,10 @@
+---
+
+mongodb_listen_addresses:
+  - 127.0.0.1
+
+mongodb_distribution: "{{ ansible_facts['distribution_release'] }}"
+mongodb_expired_signing_key: false
+mongodb_version: "8.0"
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

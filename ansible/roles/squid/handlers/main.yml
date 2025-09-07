@@ -1,0 +1,17 @@
+---
+- name: reload-squid
+  service:
+    name: squid
+    state: reloaded
+
+- name: restart-squid
+  service:
+    name: squid
+    state: restarted
+
+- name: restart-lighttpd
+  service:
+    name: lighttpd
+    state: restarted
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

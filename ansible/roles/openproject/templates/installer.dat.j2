@@ -1,0 +1,14 @@
+openproject/edition default
+postgres/autoinstall reuse
+postgres/db_host {{ openproject.postgres_host }}
+postgres/db_port 5432
+postgres/db_username {{ openproject.postgres_user }}
+postgres/db_password {{ openproject.postgres_pass }}
+postgres/db_name {{ openproject.postgres_db }}
+server/autoinstall skip
+memcached/autoinstall skip
+
+server/hostname {{ openproject.server_name }}
+server/ssl no
+openproject/admin_email root@manicminer.io
+openproject/default_language en

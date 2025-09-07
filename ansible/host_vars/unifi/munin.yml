@@ -1,0 +1,11 @@
+---
+munin:
+  contrib_plugins:
+    - path: ubiquiti/unifi_api
+      target: unifi
+  plugin_configs:
+    - unifi.conf
+
+
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,28 @@
+---
+- hosts: elasticsearch
+  tags: elasticsearch
+  roles:
+    - elasticsearch
+
+    - role: nginx
+      listen:
+        - 443 ssl
+        - "{{ ansible_facts['default_ipv4']['address'] }}:9200 ssl"
+      proxy_port: 9200
+
+- hosts: kibana
+  tags: kibana
+  roles:
+    - kibana
+
+    - role: nginx
+      proxy_port: 5601
+
+- hosts: elasticsearch
+  tags:
+    - filebeat
+    - never
+  tasks:
+    - shell: filebeat -e -E setup.kibana.host=https://kibana.manicminer.io:443
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

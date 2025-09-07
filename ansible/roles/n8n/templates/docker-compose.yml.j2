@@ -1,0 +1,22 @@
+---
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:{{ n8n_version }}
+    restart: always
+    environment:
+      GENERIC_TIMEZONE: Europe/London
+      N8N_RUNNERS_ENABLED: true
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: {{ n8n.postgres_host }}
+      DB_POSTGRESDB_USER: {{ n8n.postgres_user }}
+      DB_POSTGRESDB_DATABASE: {{ n8n.postgres_db }}
+      DB_POSTGRESDB_PASSWORD: {{ n8n.postgres_pass }}
+      DB_POSTGRESDB_SCHEMA: public
+    ports:
+      - 127.0.0.1:5678:5678
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:
+    driver: local

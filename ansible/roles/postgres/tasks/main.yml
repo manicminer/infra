@@ -1,0 +1,63 @@
+---
+
+- deb822_repository:
+    name: postgresql
+    types: deb
+    uris: "https://apt.postgresql.org/pub/repos/apt"
+    suites: "{{ ansible_distribution_release }}-pgdg"
+    components: main
+    architectures: amd64
+    signed_by: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
+
+- apt:
+    name:
+      - postgresql
+      - "postgresql-{{ postgres_version }}"
+      - "postgresql-client-{{ postgres_version }}"
+      - postgresql-client-common
+      - postgresql-common
+      - "postgresql-{{ postgres_version }}-pgvector"
+      - python3-psycopg2
+    state: present
+    update_cache: yes
+
+- ansible.builtin.lineinfile:
+    path: "/etc/postgresql/{{ postgres_version }}/main/postgresql.conf"
+    regexp: "^#?{{ item.key }}([ ]*)=([ ]*)"
+    line: "{{ item.key }} = {{ item.value }}"
+    backrefs: true
+    firstmatch: true
+  loop: "{{ config | dict2items }}"
+  notify: restart-postgresql
+  vars:
+    config:
+      listen_addresses: "'{{ postgres_listen_addresses | join(',') }}'"
+      port: "{{ postgres_port }}"
+
+- template:
+    src: pg_hba.conf.j2
+    dest: "/etc/postgresql/{{ postgres_version }}/main/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: '0640'
+  notify: restart-postgresql
+
+- file:
+    path: /etc/systemd/system/postgresql@.service.d
+    mode: '0755'
+    state: directory
+
+- template:
+    src: postgresql-override.conf.j2
+    dest: "/etc/systemd/system/postgresql@.service.d/override.conf"
+    mode: '0644'
+  notify: restart-postgresql
+
+- service:
+    name: postgresql
+    enabled: yes
+    state: started
+
+- include_tasks: pgadmin.yml
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

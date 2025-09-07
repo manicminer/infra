@@ -1,0 +1,38 @@
+---
+- import_playbook: common.yml
+
+#- import_playbook: consul.yml
+#- import_playbook: nomad.yml
+
+- import_playbook: authentik.yml
+- import_playbook: bitwarden.yml
+- import_playbook: emby.yml
+- import_playbook: files.yml
+- import_playbook: github-runner.yml
+- import_playbook: home-assistant.yml
+- import_playbook: io.yml
+- import_playbook: photoprism.yml
+- import_playbook: pihole.yml
+- import_playbook: postgres.yml
+- import_playbook: rabbitmq.yml
+- import_playbook: squid.yml
+- import_playbook: syncthing.yml
+- import_playbook: work.yml
+
+- import_playbook: ups.yml
+- import_playbook: warehouse.yml
+
+  #- import_playbook: elasticsearch.yml
+  #- import_playbook: grafana.yml
+  #- import_playbook: influxdb.yml
+  #- import_playbook: kibana.yml
+  #- import_playbook: mail.yml
+  #- import_playbook: mssql.yml
+  #- import_playbook: munin.yml
+  #- import_playbook: plausible.yml
+  #- import_playbook: teamcity.yml
+  #- import_playbook: waypoint.yml
+
+
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,46 @@
+---
+
+- ansible.builtin.apt:
+    name: clamav-daemon
+    state: latest
+
+- ansible.builtin.lineinfile:
+    path: "/etc/clamav/clamd.conf"
+    regexp: "^{{ item.key }}([ ]+)([ ]*)"
+    line: "{{ item.key }} {{ item.value }}"
+    backrefs: true
+    firstmatch: true
+  loop: "{{ config | dict2items }}"
+  notify: "restart-clamav-daemon"
+  vars:
+    config:
+      MaxDirectoryRecursion: 50
+
+- ansible.builtin.service:
+    name: clamav-daemon
+    enabled: true
+    state: started
+
+- ansible.builtin.file:
+    path: /root/quarantine
+    owner: root
+    group: root
+    mode: '0700'
+    state: directory
+
+- ansible.builtin.template:
+    src: clamdscan-nightly.sh.j2
+    dest: /root/bin/clamdscan-nightly.sh
+    owner: root
+    group: root
+    mode: '0700'
+
+- ansible.builtin.cron:
+    name: clamdscan
+    user: root
+    hour: 1
+    minute: 0
+    job: "/root/bin/clamdscan-nightly.sh"
+    state: present
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

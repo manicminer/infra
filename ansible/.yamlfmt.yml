@@ -1,0 +1,15 @@
+---
+formatter:
+  type: basic
+  eof_newline: true
+  include_document_start: true
+  indent: 2
+  indent_root_arrays: false
+  indentless_arrays: false
+  line_ending: lf
+  max_line_length: 0
+  retain_line_breaks: true
+  scan_folded_as_literal: true
+  trim_trailing_whitespace: true
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

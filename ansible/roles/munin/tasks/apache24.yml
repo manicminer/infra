@@ -1,0 +1,38 @@
+---
+- apt:
+    name:
+      - apache2
+      - libapache2-mod-fcgid
+    state: present
+
+- template:
+    src: default-ssl.conf.j2
+    dest: /etc/apache2/sites-available/default-ssl.conf
+  notify: restart-apache2
+
+- shell:
+    cmd: a2enmod ssl
+    creates: /etc/apache2/mods-enabled/ssl.conf
+  notify: restart-apache2
+
+- shell:
+    cmd: a2dissite 000-default
+    removes: /etc/apache2/sites-enabled/000-default.conf
+  notify: restart-apache2
+
+- shell:
+    cmd: a2ensite default-ssl
+    creates: /etc/apache2/sites-enabled/default-ssl.conf
+  notify: restart-apache2
+
+- template:
+    src: munin-apache24.conf.j2
+    dest: /etc/apache2/conf-available/munin.conf
+  notify: restart-apache2
+
+- shell:
+    cmd: a2enconf munin
+    creates: /etc/apache2/conf-enabled/munin.conf
+  notify: restart-apache2
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,43 @@
+---
+
+- ansible.builtin.apt:
+    name: iptables-persistent
+    state: present
+
+- ansible.builtin.get_url:
+    url: "https://ip-ranges.amazonaws.com/ip-ranges.json"
+    dest: /tmp/aws.json
+  delegate_to: localhost
+
+- include_vars:
+    name: aws_networks
+    file: /tmp/aws.json
+
+- ansible.builtin.get_url:
+    url: "https://www.digitalocean.com/geo/google.csv"
+    dest: /tmp/digitalocean.csv
+  delegate_to: localhost
+
+- community.general.read_csv:
+    path: /tmp/digitalocean.csv
+    fieldnames: cidr,country,state,city,zip
+  register: digital_ocean_networks
+  delegate_to: localhost
+
+- ansible.builtin.file:
+    path: /root/bin
+    state: directory
+
+- ansible.builtin.template:
+    src: block_cloud_providers.sh.j2
+    dest: /root/bin/block_cloud_providers.sh
+    owner: root
+    group: root
+    mode: '0700'
+  register: block_cloud_providers
+
+- ansible.builtin.shell:
+    cmd: /root/bin/block_cloud_providers.sh
+  when: block_cloud_providers.changed
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

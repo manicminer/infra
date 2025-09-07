@@ -1,0 +1,68 @@
+---
+
+- user:
+    name: authentik
+    create_home: true
+    groups: docker
+    append: true
+    shell: /bin/bash
+    system: true
+
+- file:
+    path: /home/authentik/authentik
+    owner: authentik
+    group: authentik
+    state: directory
+
+- template:
+    src: docker-compose.yml.j2
+    dest: /home/authentik/authentik/docker-compose.yml
+    owner: authentik
+    group: authentik
+  notify: restart-authentik
+
+- template:
+    src: env.j2
+    dest: /home/authentik/authentik/.env
+    owner: authentik
+    group: docker
+    mode: '0640'
+  notify: restart-authentik
+
+#- apt:
+#    pkg: python3-docker
+#    state: latest
+#
+#- pip:
+#    name: docker-compose
+#    state: present
+#
+#- community.docker.docker_compose:
+#    project_src: /home/authentik/authentik
+#    state: present
+#  become: yes
+#  become_user: authentik
+#  register: docker_compose
+
+#- shell:
+#    cmd: docker-compose up -d
+#    chdir: /home/authentik/authentik
+#  become: yes
+#  become_user: authentik
+
+- template:
+    src: authentik.service.j2
+    dest: /etc/systemd/system/authentik.service
+  register: authentik_service
+  notify: restart-authentik
+
+- shell:
+    cmd: systemctl daemon-reload
+  when: authentik_service.changed
+
+- service:
+    name: authentik
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

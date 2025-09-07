@@ -1,0 +1,13 @@
+---
+services:
+  heimdall:
+    image: linuxserver/heimdall:{{ heimdall_version }}
+    restart: always
+    environment:
+      PUID: {{ heimdall_user.uid }}
+      PGID: {{ heimdall_user.group }}
+    ports:
+      - 127.0.0.1:9004:80
+    volumes:
+      - {{ home_dir }}/config:/config
+

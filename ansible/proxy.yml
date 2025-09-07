@@ -1,0 +1,64 @@
+---
+
+- hosts: proxy
+  roles:
+    - role: tls
+      tags: tls
+
+- hosts: proxy
+  tags: caddy
+  roles:
+
+    - role: caddy
+      tags: caddy
+      enable_fqdn_static: true
+
+    - role: caddy-proxy
+      tags: caddy
+      site_name: auth
+      server_name: auth.manicminer.io
+      proxy_host: 10.150.0.30
+      proxy_port: 9000
+
+    - role: caddy-proxy
+      tags: caddy
+      site_name: triton
+      server_name: triton.manicminer.io
+      proxy_host: 10.150.0.40
+      proxy_port: 443
+      proxy_use_https: true
+      proxy_port_http: 80
+      allow_http: true
+
+    - role: caddy-proxy
+      tags: caddy
+      site_name: proteus
+      server_name: proteus.manicminer.io
+      proxy_host: 10.150.0.50
+      proxy_port: 443
+      proxy_use_https: true
+      proxy_port_http: 80
+      allow_http: true
+
+    - role: caddy-proxy
+      tags: omnivore
+      site_name: omnivore
+      server_name: omnivore.manicminer.io
+      proxy_host: 10.150.0.22
+      proxy_port: 3000
+
+    - role: caddy-proxy
+      tags: omnivore
+      site_name: omnivore-api
+      server_name: omnivore-api.manicminer.io
+      proxy_host: 10.150.0.22
+      proxy_port: 4000
+
+    - role: caddy-proxy
+      tags: omnivore
+      site_name: omnivore-images
+      server_name: omnivore-images.manicminer.io
+      proxy_host: 10.150.0.22
+      proxy_port: 7070
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

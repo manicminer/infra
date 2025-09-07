@@ -1,0 +1,26 @@
+---
+- assert:
+    that:
+      - borg_archive_root != ""
+      - borg_passphrase != ""
+
+- ansible.builtin.apt_repository:
+    repo: "ppa:costamagnagianfranco/borgbackup"
+    state: present
+    update_cache: yes
+
+- ansible.builtin.apt:
+    name: borgbackup
+    state: present
+
+- ansible.builtin.template:
+    src: borg-passphrase.j2
+    dest: /root/.borg-passphrase
+    mode: '0600'
+
+- ansible.builtin.template:
+    src: wordpress-backup.sh.j2
+    dest: /root/bin/wordpress-backup.sh
+    mode: '0700'
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,12 @@
+---
+- ansible.builtin.apt:
+    name: rsync
+    state: present
+
+- ansible.posix.synchronize:
+    archive: yes
+    src: /etc/letsencrypt/
+    dest: /etc/letsencrypt/
+  delegate_to: work
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,9 @@
+---
+
+- ansible.builtin.template:
+    src: Caddyfile.j2
+    dest: "/etc/caddy/sites/files"
+    mode: '0644'
+  notify: restart-caddy
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

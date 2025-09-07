@@ -1,0 +1,49 @@
+[metal]
+callisto
+#dashboard
+europa
+ganymede
+#graviton
+io
+
+[container]
+adguard
+adguard-kids
+auth ansible_host=2a01:4f9:5a:2aad::30
+emby
+files
+gitea
+#graphdev
+iot-proxy
+n8n
+omnivore ansible_host=2a01:4f9:5a:2aad::22
+photos
+postgres
+postgres2 ansible_host=2a01:4f9:5a:2aad::21
+proxy ansible_host=2a01:4f9:5a:2aad::20
+rabbitmq
+syncthing
+unifi
+
+[vm]
+bitwarden
+vpn
+work
+
+[dnsmasq]
+io
+
+[warehouse]
+emby
+ganymede
+syncthing
+
+[windows]
+#mdm
+
+[windows:vars]
+remote_tmp = C:\Users\Administrator\Tmp
+become_method = runas
+ansible_user = Administrator
+ansible_shell_type = powershell
+shell_type = powershell

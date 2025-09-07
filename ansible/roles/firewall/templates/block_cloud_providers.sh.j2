@@ -1,0 +1,46 @@
+#!/bin/bash
+
+set -e 
+set -o pipefail
+
+chain_prefix=cloudvendors
+
+aws_chain="${chain_prefix}_aws"
+aws_cidrs=(
+{% for net in aws_networks.prefixes %}
+{% if net.service == 'EC2' %}
+  {{ net.ip_prefix }}
+{% endif %}
+{% endfor %}
+)
+
+digital_ocean_chain="${chain_prefix}_digitalocean"
+digital_ocean_cidrs=(
+{% for net in digital_ocean_networks.list %}
+{% if net.cidr | ansible.utils.ipv4 %}
+  {{ net.cidr }}
+{% endif %}
+{% endfor %}
+)
+
+iptables -nL "${aws_chain}" 2>/dev/null 1>/dev/null || iptables -N "${aws_chain}"
+iptables -F "${aws_chain}"
+
+for net in "${aws_cidrs[@]}"; do
+  iptables -A "${aws_chain}" -s "${net}" -j DROP
+done
+
+iptables -nL INPUT | grep -q "${aws_chain}" || iptables -I INPUT -j "${aws_chain}"
+
+iptables -nL "${digital_ocean_chain}" 2>/dev/null 1>/dev/null || iptables -N "${digital_ocean_chain}"
+iptables -F "${digital_ocean_chain}"
+
+for net in "${digital_ocean_cidrs[@]}"; do
+  iptables -A "${digital_ocean_chain}" -s "${net}" -j DROP
+done
+
+iptables -nL INPUT | grep -q "${digital_ocean_chain}" || iptables -I INPUT -j "${digital_ocean_chain}"
+
+iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+iptables-save >/etc/iptables/rules.v4

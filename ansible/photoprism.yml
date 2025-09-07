@@ -1,0 +1,21 @@
+---
+- hosts: photos
+  roles:
+    - role: tls
+      tags: tls
+
+    - role: docker
+      tags: docker
+
+    - role: photoprism
+      tags: photoprism
+
+    - role: caddy
+      tags: caddy
+
+    - role: caddy-proxy
+      tags: caddy
+      proxy_port: 2342
+
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

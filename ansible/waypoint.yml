@@ -1,0 +1,15 @@
+---
+- hosts: waypoint
+  roles:
+    - role: letsencrypt-certs
+      tags: letsencrypt-certs
+
+    - role: nginx
+      tags: nginx
+      listen:
+        - 443 ssl
+        - "{{ ansible_facts['default_ipv4']['address'] }}:9702 ssl"
+      proxy_port: 9702
+      proxy_ssl: yes
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,86 @@
+---
+
+- ansible.builtin.apt_repository:
+    repo: "ppa:ondrej/php"
+    state: present
+
+- ansible.builtin.apt:
+    name:
+      - "php{{ php_version }}"
+      - "php{{ php_version }}-fpm"
+      - "php{{ php_version }}-apcu"
+      - "php{{ php_version }}-bcmath"
+      - "php{{ php_version }}-curl"
+      - "php{{ php_version }}-gd"
+      - "php{{ php_version }}-igbinary"
+      - "php{{ php_version }}-imagick"
+      - "php{{ php_version }}-intl"
+      - "php{{ php_version }}-mbstring"
+      - "php{{ php_version }}-mysql"
+      - "php{{ php_version }}-opcache"
+      - "php{{ php_version }}-soap"
+      - "php{{ php_version }}-xml"
+      - "php{{ php_version }}-zip"
+    state: present
+
+- ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: www-data
+    group: www-data
+  loop:
+    - "/var/log/php"
+    - "/var/log/php/{{ php_version }}"
+
+- ansible.builtin.template:
+    src: logrotate.j2
+    dest: "/etc/logrotate.d/php{{ php_version }}-error"
+    owner: root
+    group: root
+    mode: '0644'
+
+- ansible.builtin.lineinfile:
+    path: "/etc/php/{{ php_version }}/fpm/pool.d/www.conf"
+    regexp: "^;?{{ item.key }}([ ]*)=([ ]*)"
+    line: "{{ item.key }} = {{ item.value }}"
+    backrefs: true
+    firstmatch: true
+  loop: "{{ config | dict2items }}"
+  notify: "restart-php-fpm-{{ php_version }}"
+  vars:
+    config:
+      pm.max_children: 128
+      pm.max_spare_servers: 16
+      pm.min_spare_servers: 8
+      pm.start_servers: 16
+
+- ansible.builtin.lineinfile:
+    path: "/etc/php/{{ php_version }}/fpm/php.ini"
+    regexp: "^;?{{ item.key }}([ ]*)=([ ]*)"
+    line: "{{ item.key }} = {{ item.value }}"
+    backrefs: true
+    firstmatch: true
+  loop: "{{ config | dict2items }}"
+  notify: "restart-php-fpm-{{ php_version }}"
+  vars:
+    config:
+      error_log: "/var/log/php/{{ php_version }}/error.log"
+      log_errors: "on"
+      max_input_vars: 10000
+      memory_limit: 1024M
+      opcache.enable: 1
+      opcache.force_restart_timeout: 0
+      opcache.interned_strings_buffer: 16
+      opcache.max_accelerated_files: 500000
+      opcache.memory_consumption: 2048
+      opcache.revalidate_freq: 60
+      post_max_size: 512M
+      upload_max_filesize: 512M
+      user_ini.filename: '".user.ini"'
+
+- ansible.builtin.service:
+    name: "php{{ php_version }}-fpm"
+    enabled: true
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,25 @@
+---
+
+- ansible.builtin.apt:
+    name:
+      - handbrake-cli
+      - moreutils
+    state: present
+
+- ansible.builtin.copy:
+    src: encode-media.sh
+    dest: /var/lib/emby/encode-media.sh
+    owner: emby
+    group: emby
+    mode: '0755'
+
+- ansible.builtin.cron:
+    name: encode-media
+    user: emby
+    hour: 23
+    minute: 0
+    job: "/var/lib/emby/encode-media.sh | ts 1>>/var/log/warehouse/encode-media.log 2>>/var/log/warehouse/encode-media.log"
+    disabled: true
+    state: present
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

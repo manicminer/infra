@@ -1,0 +1,17 @@
+---
+
+- include_tasks: postfix.yml
+- include_tasks: dovecot.yml
+- include_tasks: fetchmail.yml
+
+- shell:
+    cmd: maildirmake.dovecot /etc/skel/{{ item }}
+    creates: /etc/skel/{{ item }}
+  loop:
+    - Maildir
+    - Maildir/.Drafts
+    - Maildir/.Sent
+    - Maildir/.Trash
+    - Maildir/.Templates
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

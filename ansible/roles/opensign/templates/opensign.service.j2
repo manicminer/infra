@@ -1,0 +1,18 @@
+[Unit]
+Description=Opensign
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory={{ home_dir }}/docker
+ExecStartPre=/usr/local/bin/docker-compose pull
+ExecStart=/usr/local/bin/docker-compose up -d
+ExecStop=/usr/local/bin/docker-compose down
+TimeoutStartSec=0
+User=opensign
+Group=opensign
+
+[Install]
+WantedBy=multi-user.target

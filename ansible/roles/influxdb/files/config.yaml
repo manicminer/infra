@@ -1,0 +1,4 @@
+session-length: 1440
+session-renew-disabled: true
+tls-cert: /etc/influxdb/fullchain.pem
+tls-key: /etc/influxdb/privkey.pem

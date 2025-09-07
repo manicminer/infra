@@ -1,0 +1,9 @@
+---
+
+# firewall_options:
+#   - block_aws
+#   - block_digitalocean
+
+firewall_options: []
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

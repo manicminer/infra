@@ -1,0 +1,96 @@
+---
+- hosts: callisto
+  roles:
+    - role: tls
+      tags: tls
+
+    - role: postfix
+      tags: postfix
+
+    - role: borg
+      tags: borg
+
+    - role: clamav
+      tags: clamav
+      clamav_scan_paths:
+        - /home
+        - /var/www
+
+    - role: rkhunter
+      tags: rkhunter
+
+    - role: docker
+      tags: docker
+
+    - role: maxmind
+      tags: maxmind
+
+    - role: echoip
+      tags: echoip
+
+    - role: mariadb
+      tags: mariadb
+
+    - role: php
+      tags: php
+      php_version: 8.1
+
+    - role: php
+      tags: php
+      php_version: 8.2
+
+    - role: caddy
+      tags: caddy
+      enable_fqdn_static: true
+
+    - role: caddy-proxy
+      tags: echoip
+      site_name: echoip
+      server_name: ip.manicminer.io
+      proxy_port: 9005
+      allow_http: true
+
+    - role: caddy-proxy
+      tags: echoip
+      site_name: echoip4
+      server_name: ip4.manicminer.io
+      proxy_port: 9005
+      allow_http: true
+
+    - role: caddy-proxy
+      tags: echoip
+      site_name: echoip6
+      server_name: ip6.manicminer.io
+      proxy_port: 9005
+      allow_http: true
+
+    - role: phpmyadmin
+      tags: phpmyadmin
+
+    - role: wordpress-site
+      tags:
+        - wordpress-site
+        - manicminer
+      db_password: !vault |
+        $ANSIBLE_VAULT;1.1;AES256
+        66323765323161343265333436666335373262353339373166616162653261626136653464646663
+        3330316234626631626265306532386639353835393766630a383539653837323361633238666638
+        33393432353965666430303336646530303933363938343639336130653765643030343063363466
+        3165346137616366650a336233386536366661366539316232363335643664613762633833376530
+        37383162373735616537613130303762373661613731386435663062623266613231
+      domain_name: manicminer.io
+      php_version: 8.2
+      site_name: manicminer
+
+  tasks:
+
+    - ansible.builtin.get_url:
+        url: "https://github.com/wp-cli/wp-cli/releases/download/v2.11.0/wp-cli-2.11.0.phar"
+        dest: /usr/local/bin/wp
+        mode: '0755'
+      tags: wp-cli
+
+
+- import_playbook: sites.yml
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

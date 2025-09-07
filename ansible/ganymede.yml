@@ -1,0 +1,11 @@
+---
+
+- hosts: ganymede
+  roles:
+    - role: postfix
+      tags: postfix
+
+    - role: ups
+      tags: ups
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

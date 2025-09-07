@@ -1,0 +1,46 @@
+acl localnet src 10.11.12.0/24
+acl localnet src 192.168.0.0/16
+acl trustednet src 10.11.12.0/23
+
+http_access allow localhost manager
+http_access allow trustednet manager
+http_access deny manager
+
+{% for acl, rule in acls.items() %}
+acl {{ acl }} {{ rule }}
+{% endfor %}
+
+{% for user, details in users.items() %}
+{% if 'networks' in details %}
+{% for network in details.networks %}
+acl user_{{ user }}_{{ loop.index }} src {{ network }}
+{% endfor %}
+{% endif %}
+
+{% if 'allowed' in details %}
+{% for acl in details.allowed %}
+{% if 'networks' in details %}
+{% for network in details.networks %}
+http_access allow {{ acl }} user_{{ user }}_{{ loop.index }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if 'blocked' in details %}
+{% for acl in details.blocked %}
+{% if 'networks' in details %}
+{% for network in details.networks %}
+http_access deny {{ acl }} user_{{ user }}_{{ loop.index }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+
+http_access allow localnet
+http_access allow localhost
+http_access deny all
+
+# vim: set ft=squid:

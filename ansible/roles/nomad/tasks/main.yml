@@ -1,0 +1,18 @@
+---
+- apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+    state: present
+
+- apt_repository:
+    repo: "deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_facts['distribution_release'] }} main"
+    update_cache: yes
+    state: present
+
+- apt:
+    name: nomad
+    state: present
+
+- include_tasks: agent.yml
+  when: agent
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,10 @@
+---
+- hosts: vpn
+  roles:
+    - role: tls
+      tags: tls
+
+    - role: openvpn
+      tags: openvpn
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

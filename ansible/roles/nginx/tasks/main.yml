@@ -1,0 +1,26 @@
+---
+- ansible.builtin.apt:
+    name: nginx
+    state: present
+
+- ansible.builtin.user:
+    name: www-data
+    groups: ssl-cert
+    append: true
+
+- ansible.builtin.template:
+    src: "{{ site_template }}"
+    dest: /etc/nginx/sites-available/{{ site_name }}
+  notify: restart-nginx
+
+- ansible.builtin.file:
+    state: link
+    dest: /etc/nginx/sites-enabled/{{ site_name }}
+    src: /etc/nginx/sites-available/{{ site_name }}
+
+- ansible.builtin.service:
+    name: nginx
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

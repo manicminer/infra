@@ -1,0 +1,44 @@
+# Full configuration options can be found at https://www.nomadproject.io/docs/configuration
+
+datacenter = "home"
+data_dir = "/opt/nomad/data"
+bind_addr = "0.0.0.0"
+#bind_addr = "{{ ansible_facts['all_ipv4_addresses'] | ipaddr('10.11.12.0/24') | first }}"
+
+server {
+  enabled = true
+  bootstrap_expect = 1
+}
+
+client {
+  enabled = true
+  servers = ["127.0.0.1:4646"]
+
+  host_network "primary" {
+    cidr = "{{ ansible_facts['all_ipv4_addresses'] | ipaddr('10.11.12.0/24') | first }}/32"
+  }
+
+{% for ip in ansible_facts['all_ipv4_addresses'] | ipaddr('10.11.12.0/24') %}
+{% if loop.index > 1 %}
+  host_network "secondary{{ loop.index - 1 }}" {
+    cidr = "{{ ip }}/32"
+  }
+
+{% endif %}
+{% endfor %}
+{% for ip in ansible_facts['all_ipv4_addresses'] | ipaddr('93.89.136.160/28') %}
+  host_network "public{{ loop.index }}" {
+    cidr = "{{ ip }}/32"
+  }
+
+{% endfor %}
+  host_volume "certs" {
+    path      = "/etc/letsencrypt"
+    read_only = true
+  }
+
+  host_volume "registry" {
+    path      = "/opt/registry/data"
+    read_only = false
+  }
+}

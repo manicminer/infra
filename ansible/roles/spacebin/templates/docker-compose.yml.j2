@@ -1,0 +1,13 @@
+---
+services:
+  spacebin:
+    image: spacebinorg/spirit:v{{ spacebin_version }}
+    restart: always
+    environment:
+      SPIRIT_CONNECTION_URI: postgres://{{ spacebin.postgres_user }}:{{ spacebin.postgres_pass }}@{{ spacebin.postgres_host }}:5432/{{ spacebin.postgres_db }}?sslmode=disable
+      SPIRIT_EXPIRATION_AGE: 2628000
+      SPIRIT_MAX_SIZE: 10000000
+      SPIRIT_PORT: 80
+    ports:
+      - 127.0.0.1:9001:80
+

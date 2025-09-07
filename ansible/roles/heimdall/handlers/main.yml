@@ -1,0 +1,8 @@
+---
+
+- name: restart-heimdall
+  service:
+    name: heimdall
+    state: restarted
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

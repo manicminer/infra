@@ -1,0 +1,40 @@
+---
+
+- ansible.builtin.deb822_repository:
+    name: mariadb
+    types: deb
+    uris: "https://dlm.mariadb.com/repo/mariadb-server/{{ mariadb_version }}/repo/{{ ansible_facts['distribution'] | lower }}"
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: main
+    architectures: amd64
+    signed_by: "https://mariadb.org/mariadb_release_signing_key.pgp"
+
+- ansible.builtin.apt:
+    name:
+      - mariadb-server
+      - python3-mysqldb
+    state: latest
+    update_cache: true
+
+- ansible.builtin.service:
+    name: mariadb
+    enabled: true
+    state: started
+
+- community.mysql.mysql_user:
+    name: root
+    password: "{{ mariadb_root_password }}"
+    check_implicit_admin: true
+
+- ansible.builtin.copy:
+    dest: /root/.my.cnf
+    owner: root
+    group: root
+    mode: '0400'
+    content: |
+      [client]
+      password = {{ mariadb_root_password }}
+
+
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

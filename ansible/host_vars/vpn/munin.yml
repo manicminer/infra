@@ -1,0 +1,16 @@
+---
+munin:
+  contrib_plugins:
+    - path: vpn/openvpn_as_mtime
+      target: openvpn_as_mtime
+    - path: vpn/openvpn_as_traffic
+      target: openvpn_as_traffic
+    - path: vpn/openvpn_as_ttime
+      target: openvpn_as_ttime
+    - path: vpn/openvpn_as_users
+      target: openvpn_as_users
+    - path: vpn/openvpn_multi
+      target: openvpn_multi
+  plugin_configs: []
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

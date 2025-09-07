@@ -1,0 +1,12 @@
+---
+services:
+  echoip:
+    image: mpolden/echoip:latest
+    command: -l :{{ echoip.listen_port }} -r -p -H {{ echoip.remote_header }} -a /opt/maxmind/GeoLite2-ASN.mmdb -c /opt/maxmind/GeoLite2-City.mmdb -f /opt/maxmind/GeoLite2-Country.mmdb
+    restart: always
+    ports:
+      - 127.0.0.1:9005:80
+    volumes:
+      - type: bind
+        source: {{ echoip.maxmind_db_dir }}
+        target: /opt/maxmind

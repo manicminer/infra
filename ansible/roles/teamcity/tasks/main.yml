@@ -1,0 +1,45 @@
+---
+- user:
+    name: teamcity
+    groups: docker
+    append: yes
+    state: present
+
+- file:
+    path: /home/teamcity/.ssh
+    owner: teamcity
+    mode: "0700"
+    state: directory
+
+- copy:
+    src: ssh_config
+    dest: /home/teamcity/.ssh/config
+    owner: teamcity
+    mode: "0600"
+
+- apt:
+    name: openjdk-11-jre-headless
+    state: present
+
+- unarchive:
+    src: "https://download.jetbrains.com/teamcity/TeamCity-2020.2.2.tar.gz"
+    remote_src: yes
+    dest: /opt
+    owner: teamcity
+    creates: /opt/TeamCity/bin/runAll.sh
+
+- copy:
+    src: teamcity.service
+    dest: /etc/systemd/system/teamcity.service
+  register: teamcity_unit
+
+- shell:
+    cmd: systemctl daemon-reload
+  when: teamcity_unit.changed
+
+- service:
+    name: teamcity
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

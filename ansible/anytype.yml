@@ -1,0 +1,18 @@
+---
+- hosts: anytype
+  roles:
+    - role: letsencrypt-certs
+      tags: letsencrypt-certs
+
+    - role: docker
+      tags: docker
+
+    - role: anytype
+      tags: anytype
+
+    - role: caddy-proxy
+      tags: caddy
+      proxy_port: 2342
+
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

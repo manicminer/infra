@@ -1,0 +1,36 @@
+---
+- hosts: teamcity
+  tags: teamcity
+  roles:
+    - role: letsencrypt-certs
+      tags: letsencrypt-certs
+
+    - role: docker
+      tags: docker
+
+    - role: nomad
+      tags: nomad
+
+    - role: teamcity
+      tags: teamcity
+
+    - role: nginx
+      tags: nginx
+      proxy_port: 8111
+      server_name: tc.manicminer.io
+
+- hosts: teamcity
+  tags: ansible
+
+  tasks:
+    - pip:
+        name: ansible
+        executable: pip3
+        state: latest
+
+    - apt:
+        name:
+          - python3-netaddr
+        state: present
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

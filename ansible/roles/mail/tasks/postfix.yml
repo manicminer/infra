@@ -1,0 +1,16 @@
+---
+- apt:
+    name: postfix
+    state: present
+
+- template:
+    src: main.cf.j2
+    dest: /etc/postfix/main.cf
+  notify: restart-postfix
+
+- service:
+    name: postfix
+    state: started
+    enabled: yes
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

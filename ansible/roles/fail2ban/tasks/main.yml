@@ -1,0 +1,17 @@
+---
+
+- ansible.builtin.apt:
+    name: fail2ban
+    state: latest
+
+- ansible.builtin.template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
+  notify: restart-fail2ban
+
+- ansible.builtin.service:
+    name: fail2ban
+    enabled: true
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

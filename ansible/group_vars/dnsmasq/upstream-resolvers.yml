@@ -1,0 +1,17 @@
+---
+upstream_resolvers:
+  ad.manicminer.io:
+    - 10.20.0.28
+    - 10.20.0.29
+  van.manicminer.io:
+    - 192.168.4.5
+  manicminer.io:
+    - 10.20.0.2
+
+reverse_resolvers:
+  "10.0.0.0/8":
+    - 10.20.0.2
+  "192.168.4.0/24":
+    - 192.168.4.5
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

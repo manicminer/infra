@@ -1,0 +1,25 @@
+---
+
+- ansible.builtin.deb822_repository:
+    name: unifi
+    types: deb
+    uris: "https://www.ui.com/downloads/unifi/debian"
+    suites: stable
+    components: ubiquiti
+    architectures: amd64
+    signed_by: "https://dl.ui.com/unifi/unifi-repo.gpg"
+
+- ansible.builtin.apt:
+    name: unifi
+    state: present
+    update_cache: yes
+
+- ansible.builtin.shell:
+    cmd: openssl pkcs12 -export -out unifi.pfx -inkey /etc/ssl/manicminer/manicminer.key -in /etc/ssl/manicminer/manicminer.pem -certfile /etc/ssl/manicminer/chain.pem -name unifi -passout pass:aircontrolenterprise
+  notify: restart-unifi
+
+- ansible.builtin.shell:
+    cmd: keytool -importkeystore -srckeystore /root/unifi.pfx -srcstoretype pkcs12 -srcstorepass aircontrolenterprise -destkeystore /var/lib/unifi/keystore -deststoretype jks -deststorepass aircontrolenterprise -noprompt
+  notify: restart-unifi
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

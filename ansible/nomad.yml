@@ -1,0 +1,15 @@
+---
+- hosts: nomad
+  roles:
+    - docker
+
+    - role: consul
+      tags: consul
+      service_type: agent
+      agent_has_docker: true
+
+    - role: nomad
+      tags: nomad
+      agent: true
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

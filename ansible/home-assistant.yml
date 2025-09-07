@@ -1,0 +1,8 @@
+---
+- hosts: homeassistant
+  roles:
+    - role: nginx
+      tags: nginx
+      proxy_port: 8123
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

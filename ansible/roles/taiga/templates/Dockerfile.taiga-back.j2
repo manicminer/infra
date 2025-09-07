@@ -1,0 +1,7 @@
+FROM taigaio/taiga-back:{{ taiga_versions.back }}
+
+RUN pip install mozilla-django-oidc
+COPY --chown=taiga:taiga ./taiga-contrib-oidc-auth/back /tmp/taiga-contrib-oidc-auth
+RUN pip install /tmp/taiga-contrib-oidc-auth && rm -rf /tmp/taiga-contrib-oidc-auth
+
+COPY --chown=taiga:taiga ./taiga-contrib-oidc-auth/urls.py /taiga-back/settings/

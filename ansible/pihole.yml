@@ -1,0 +1,10 @@
+---
+- hosts: io,pihole
+  roles:
+    - role: letsencrypt-certs
+      tags: letsencrypt-certs
+
+    - role: pihole
+      tags: pihole
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

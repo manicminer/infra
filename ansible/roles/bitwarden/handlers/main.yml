@@ -1,0 +1,14 @@
+---
+- name: rebuild-bitwarden
+  shell:
+    cmd: /opt/bitwarden/bitwarden.sh rebuild
+  become: yes
+  become_user: bitwarden
+
+- name: restart-bitwarden
+  shell:
+    cmd: /opt/bitwarden/bitwarden.sh restart
+  become: yes
+  become_user: bitwarden
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

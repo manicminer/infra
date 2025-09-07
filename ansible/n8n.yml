@@ -1,0 +1,21 @@
+---
+- hosts: n8n
+  roles:
+    - role: docker
+      tags: docker
+
+    - role: tls
+      tags: tls
+
+    - role: n8n
+      tags: n8n
+
+    - role: caddy
+      tags: caddy
+
+    - role: caddy-proxy
+      tags: caddy
+      proxy_port: 5678
+
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,59 @@
+{{ domain_name }} {
+	root * /var/www/{{ site_name }}/wordpress
+
+	tls tom@bamford.io
+
+	log {
+		output file /var/log/caddy/{{ site_name }}.access.log
+		format console
+	}
+
+	@admin_denied {
+		path /wp-admin/*
+		not path /wp-admin/admin-ajax.php
+		not path /wp-admin/theme-editor.php
+		not remote_ip 127.0.0.0/8 {{ wordpress_admin_allowed_networks | join(' ') }}
+	}
+
+	@disallowed {
+		#path /xmlrpc.php
+		path *.sql
+		path /wp-content/uploads/*.php
+	}
+
+	@dotfiles {
+		path */.*
+		not path /.well-known/*
+	}
+
+	respond @admin_denied 403
+	respond @disallowed 403
+	respond @dotfiles 403
+
+	# Encode responses in zstd or gzip, depending on the
+	# availability indicated by the browser.
+	encode zstd gzip
+
+	file_server
+
+	# Configures multiple PHP-related settings
+	php_fastcgi unix///run/php/php{{ php_version }}-fpm.sock {
+		capture_stderr
+	}
+}
+
+www.{{ domain_name }} {
+	redir https://{{ domain_name }}{uri} permanent
+}
+
+{% for domain in additional_domains %}
+{{ domain }} {
+	redir https://{{ domain_name }}{uri} permanent
+}
+
+www.{{ domain }} {
+	redir https://{{ domain_name }}{uri} permanent
+}
+{% endfor %}
+
+# vim: set ft=Caddyfile ts=4 sts=4 sw=4:

@@ -1,0 +1,46 @@
+---
+
+- ansible.builtin.user:
+    name: heimdall
+    home: "{{ home_dir }}"
+    create_home: true
+    groups: docker
+    append: true
+    shell: /bin/bash
+    system: true
+  register: heimdall_user
+
+- block:
+    - ansible.builtin.file:
+        path: "{{ item }}"
+        mode: '0755'
+        state: directory
+      loop:
+        - "{{ home_dir }}/config"
+        - "{{ home_dir }}/docker"
+
+    - ansible.builtin.template:
+        src: docker-compose.yml.j2
+        dest: "{{ home_dir }}/docker/docker-compose.yml"
+        mode: '0644'
+      notify: restart-heimdall
+
+  become: true
+  become_user: heimdall
+
+- template:
+    src: heimdall.service.j2
+    dest: /etc/systemd/system/heimdall.service
+  register: heimdall_service
+  notify: restart-heimdall
+
+- shell:
+    cmd: systemctl daemon-reload
+  when: heimdall_service.changed
+
+- service:
+    name: heimdall
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

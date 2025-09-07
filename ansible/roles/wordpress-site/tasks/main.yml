@@ -1,0 +1,113 @@
+---
+- assert:
+    that:
+      - db_password != ""
+      - domain_name != ""
+      - site_name != ""
+      - borg_archive_root != ""
+      - borg_passphrase != ""
+
+- ansible.builtin.file:
+    path: /var/www/{{ site_name }}
+    owner: www-data
+    recurse: true
+    state: directory
+
+- ansible.builtin.template:
+    src: site.conf.j2
+    dest: "/etc/caddy/sites/{{ site_name }}.conf"
+  notify: restart-caddy
+
+- community.mysql.mysql_db:
+    name: "{{ site_name }}"
+    state: present
+
+- community.mysql.mysql_user:
+    name: "{{ site_name }}"
+    password: "{{ db_password }}"
+    priv: "{{ site_name }}.*:ALL"
+
+- ansible.builtin.unarchive:
+    src: "https://wordpress.org/wordpress-{{ wordpress_version }}.zip"
+    dest: "/var/www/{{ site_name }}"
+    owner: www-data
+    remote_src: true
+    creates: "/var/www/{{ site_name }}/wordpress/index.php"
+
+- ansible.builtin.shell:
+    cmd: mv "/var/www/{{ site_name }}/wordpress/wp-config-sample.php" "/var/www/{{ site_name }}/wp-config.php"
+    creates: "/var/www/{{ site_name }}/wp-config.php"
+
+- ansible.builtin.replace:
+    path: "/var/www/{{ site_name }}/wp-config.php"
+    regexp: "\r"
+
+- ansible.builtin.lineinfile:
+    path: "/var/www/{{ site_name }}/wp-config.php"
+    regexp: "define *\\( *'{{ item.key }}',.+\\);"
+    line: "define('{{ item.key }}', {{ item.value }});"
+    insertbefore: "stop editing!"
+  loop: "{{ config_constants | dict2items }}"
+  no_log: true
+  vars:
+    config_constants:
+      ABSPATH: "__DIR__ . '/wordpress/'"
+      AUTH_KEY: "{{ wordpress.auth_key }}"
+      AUTH_SALT: "{{ wordpress.auth_salt }}"
+      DB_CHARSET: "'utf8'"
+      DB_COLLATE: "''"
+      DB_HOST: "'localhost:/run/mysqld/mysqld.sock'"
+      DB_NAME: "'{{ site_name }}'"
+      DB_PASSWORD: "'{{ db_password }}'"
+      DB_USER: "'{{ site_name }}'"
+      DISABLE_WP_CRON: "true"
+      LOGGED_IN_KEY: "{{ wordpress.logged_in_key }}"
+      LOGGED_IN_SALT: "{{ wordpress.logged_in_salt }}"
+      NONCE_KEY: "{{ wordpress.nonce_key }}"
+      NONCE_SALT: "{{ wordpress.nonce_salt }}"
+      SECURE_AUTH_KEY: "{{ wordpress.secure_auth_key }}"
+      SECURE_AUTH_SALT: "{{ wordpress.secure_auth_salt }}"
+      WP_DEBUG: "false"
+      WP_MAX_MEMORY_LIMIT: "'1024M'"
+      WP_MEMORY_LIMIT: "'768M'"
+      WPOSES_AWS_ACCESS_KEY_ID: "'{{ ses_access_key_id }}'"
+      WPOSES_AWS_SECRET_ACCESS_KEY: "'{{ ses_secret_access_key }}'"
+
+- ansible.builtin.lineinfile:
+    path: "/var/www/{{ site_name }}/wordpress/.user.ini"
+    regexp: "^;?{{ item.key }}([ ]*)=([ ]*)"
+    line: "{{ item.key }} = {{ item.value }}"
+    insertbefore: BOF
+    create: true
+  loop: "{{ config | dict2items }}"
+  notify: "restart-php-fpm-{{ php_version }}"
+  vars:
+    config:
+      error_log: "/var/log/php/{{ php_version }}/error.{{ site_name }}.log"
+      log_errors: "on"
+
+- ansible.builtin.shell:
+    cmd: "borg init --encryption=repokey {{ borg_archive_root }}{{ site_name }}"
+  environment:
+    BORG_PASSPHRASE: "{{ borg_passphrase }}"
+  changed_when: "'repository already exists' not in borg_init.stderr"
+  failed_when:
+    - "'repository already exists' not in borg_init.stderr"
+    - "borg_init.rc != 0"
+  register: borg_init
+
+- ansible.builtin.cron:
+    name: "wordpress-cron-{{ site_name }}"
+    user: www-data
+    minute: "*/10"
+    job: "php /var/www/{{ site_name }}/wordpress/wp-cron.php 2>&1 1>/dev/null"
+    state: present
+
+- ansible.builtin.cron:
+    name: "wordpress-backup-{{ site_name }}"
+    minute: 0
+    hour: "3"
+    job: "/root/bin/wordpress-backup.sh '{{ site_name }}'"
+    state: present
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

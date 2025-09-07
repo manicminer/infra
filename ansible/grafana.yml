@@ -1,0 +1,14 @@
+---
+- hosts: grafana
+  roles:
+    - role: letsencrypt-certs
+      tags: letsencrypt-certs
+
+    - role: grafana
+      tags: grafana
+
+    - role: nginx
+      tags: nginx
+      proxy_port: 3000
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

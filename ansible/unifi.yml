@@ -1,0 +1,13 @@
+---
+- hosts: unifi
+  roles:
+    - role: mongodb
+      tags: mongodb
+      mongodb_distribution: bionic
+      mongodb_expired_signing_key: true
+      mongodb_version: "3.6"
+
+    - role: unifi
+      tags: unifi
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

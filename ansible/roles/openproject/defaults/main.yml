@@ -1,0 +1,5 @@
+---
+
+openproject_apt_suite: "{% if ansible_distribution_version == '24.04' %}22.04{% else %}{{ ansible_distribution_version }}{% endif %}"
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

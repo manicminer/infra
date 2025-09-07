@@ -1,0 +1,12 @@
+---
+
+- ansible.posix.authorized_key:
+    user: "{{ ssh_user }}"
+    state: present
+    key: "{{ item }}"
+  loop: "{{ ssh_public_keys }}"
+
+- community.crypto.openssh_keypair:
+    path: "{{ ansible_facts['user_dir'] }}/.ssh/id_rsa"
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

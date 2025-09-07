@@ -1,0 +1,60 @@
+---
+- file:
+    path: /etc/nomad.d
+    state: directory
+
+- template:
+    src: nomad.hcl.j2
+    dest: /etc/nomad.d/nomad.hcl
+  register: nomad_conf
+
+- template:
+    src: nomad.service.j2
+    dest: /etc/systemd/system/nomad.service
+  register: nomad_service
+
+- service:
+    name: nomad
+    enabled: yes
+    state: restarted
+  when: nomad_conf.changed or nomad_service.changed
+
+- uri:
+    method: PUT
+    url: http://localhost:4646/v1/system/gc
+
+- file:
+    path: /root/nomad
+    state: directory
+
+- copy:
+    src: echo.nomad
+    dest: /root/nomad/echo.nomad
+  register: echo_hcl
+
+- shell:
+    cmd: nomad job run echo.nomad
+    chdir: /root/nomad
+  when: echo_hcl.changed
+
+- copy:
+    src: haproxy.nomad
+    dest: /root/nomad/haproxy.nomad
+  register: haproxy_hcl
+
+- shell:
+    cmd: nomad job run haproxy.nomad
+    chdir: /root/nomad
+  when: haproxy_hcl.changed
+
+- copy:
+    src: registry.nomad
+    dest: /root/nomad/registry.nomad
+  register: registry_hcl
+
+- shell:
+    cmd: nomad job run registry.nomad
+    chdir: /root/nomad
+  when: registry_hcl.changed
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
