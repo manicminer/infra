@@ -1,6 +1,6 @@
 ---
 
-authentik_version: "2025.8"
+authentik_version: "2025.8.4"
 
 authentik:
   postgres_host: 10.150.0.21
