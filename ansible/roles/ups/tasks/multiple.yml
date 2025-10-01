@@ -1,0 +1,66 @@
+---
+- ansible.builtin.assert:
+    that:
+      - ups_serial != ""
+
+- ansible.builtin.service:
+    name: apcupsd
+    enabled: no
+    state: stopped
+
+- ansible.builtin.file:
+    path: /etc/apcupsd/apcupsd.conf
+    state: absent
+
+- ansible.builtin.service:
+    name: nutwrapper
+    enabled: no
+    state: stopped
+
+- ansible.builtin.template:
+    src: udev.rules.j2
+    dest: "/etc/udev/rules.d/90-ups-{{ ups_name }}.rules"
+    owner: root
+    group: root
+    mode: '0644'
+  register: udev_rule
+
+- ansible.builtin.shell:
+    cmd: "udevadm control --reload-rules && udevadm trigger"
+  when: udev_rule.changed
+
+- ansible.builtin.copy:
+    src: apcupsd@.service
+    dest: /etc/systemd/system/apcupsd@.service
+  notify: restart-apcupsd-all
+  register: apcupsd_service
+
+- ansible.builtin.shell:
+    cmd: systemd daemon-reload
+  when: apcupsd_service.changed
+
+- ansible.builtin.template:
+    src: apcupsd-instance.conf.j2
+    dest: "/etc/apcupsd/apcupsd-{{ ups_name }}.conf"
+  notify: restart-apcupsd-instance
+
+- ansible.builtin.file:
+    path: "/etc/apcupsd/{{ ups_name }}"
+    owner: root
+    group: root
+    mode: '0755'
+    state: directory
+
+- ansible.builtin.template:
+    src: apccontrol.j2
+    dest: "/etc/apcupsd/{{ ups_name }}/apccontrol"
+    owner: root
+    group: root
+    mode: '0755'
+
+- ansible.builtin.service:
+    name: "apcupsd@{{ ups_name }}"
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,39 +1,35 @@
 ---
+- ansible.builtin.assert:
+    that:
+      - apcupsd_mode != ""
+      - apcupsd_mode in valid_modes
+      - apcupsd_port > 0
+      - ups_name != ""
+
 - apt:
     name:
       - apcupsd
+      - apcupsd-doc
       - ucspi-tcp
     state: present
 
-- template:
-    src: apcupsd.conf.j2
-    dest: /etc/apcupsd/apcupsd.conf
-  notify: restart-apcupsd
-
-- service:
-    name: apcupsd
-    enabled: yes
-    state: started
-
-- copy:
+- ansible.builtin.copy:
     src: usvnutwrapper.sh
     dest: /usr/local/bin/usvnutwrapper.sh
     mode: '0755'
   notify: restart-nutwrapper
 
-- template:
+- ansible.builtin.template:
     src: nutwrapper.service.j2
     dest: /etc/systemd/system/nutwrapper.service
   notify: restart-nutwrapper
   register: nutwrapper_service
 
-- shell:
+- ansible.builtin.shell:
     cmd: systemd daemon-reload
   when: nutwrapper_service.changed
 
-- service:
-    name: nutwrapper
-    enabled: yes
-    state: started
+- ansible.builtin.include_tasks:
+    file: "{{ apcupsd_mode }}.yml"
 
 # vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -4,6 +4,16 @@
     name: apcupsd
     state: restarted
 
+- name: restart-apcupsd-all
+  service:
+    name: 'apcupsd@*'
+    state: restarted
+
+- name: restart-apcupsd-instance
+  service:
+    name: "apcupsd@{{ ups_name }}"
+    state: restarted
+
 - name: restart-nutwrapper
   service:
     name: nutwrapper
