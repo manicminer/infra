@@ -6,7 +6,7 @@
       - apcupsd_port > 0
       - ups_name != ""
 
-- apt:
+- ansible.builtin.apt:
     name:
       - apcupsd
       - apcupsd-doc
@@ -17,17 +17,23 @@
     src: usvnutwrapper.sh
     dest: /usr/local/bin/usvnutwrapper.sh
     mode: '0755'
-  notify: restart-nutwrapper
+  register: nutwrapper_script
 
 - ansible.builtin.template:
     src: nutwrapper.service.j2
     dest: /etc/systemd/system/nutwrapper.service
-  notify: restart-nutwrapper
   register: nutwrapper_service
 
 - ansible.builtin.shell:
     cmd: systemd daemon-reload
   when: nutwrapper_service.changed
+
+- ansible.builtin.service:
+    name: nutwrapper
+    state: restarted
+  when:
+    - nutwrapper_script.changed or nutwrapper_service.changed
+    - apcupsd_mode == 'standalone'
 
 - ansible.builtin.include_tasks:
     file: "{{ apcupsd_mode }}.yml"
