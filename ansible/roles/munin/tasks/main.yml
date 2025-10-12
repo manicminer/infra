@@ -1,0 +1,43 @@
+---
+- apt:
+    name: munin-node
+    state: present
+
+- template:
+    src: munin-node.conf.j2
+    dest: /etc/munin/munin-node.conf
+  notify: restart-munin-node
+
+- git:
+    repo: https://github.com/munin-monitoring/contrib
+    dest: /opt/munin-contrib
+  notify: restart-munin-node
+
+- file:
+    src: /opt/munin-contrib/plugins/{{ item.path }}
+    dest: /etc/munin/plugins/{{ item.target }}
+    state: link
+  loop: "{{ munin.contrib_plugins }}"
+  notify: restart-munin-node
+
+- template:
+    src: "{{ item }}.j2"
+    dest: "/etc/munin/plugin-conf.d/{{ item }}"
+  loop: "{{ munin.plugin_configs }}"
+  notify: restart-munin-node
+
+- apt:
+    name: munin
+    state: present
+  when: server
+
+- template:
+    src: munin.conf.j2
+    dest: /etc/munin/munin.conf
+  notify: restart-munin
+  when: server
+
+- include_tasks: apache24.yml
+  when: server
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

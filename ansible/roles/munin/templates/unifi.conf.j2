@@ -1,0 +1,30 @@
+[unifi_api]
+# User name to login to unifi controller API.  Default is "ubnt".  Ideally, this should
+# point to a read-only account.
+env.user munin
+
+# Password to login to unifi controller API. Default is "ubnt"
+env.pass {{ unifi_pass }}
+
+# URL of the API, with port if needed.  No trailing slash.
+# Default is https://localhost:8443
+env.api_url https://unifi.manicminer.io:8443
+
+# Verify SSL certificate name against host.
+# Note: if using a default cloudkey certificate, this will fail unless you manually add it
+# to the local keystore.
+# Default is "yes"
+env.ssl_verify_host yes
+
+# Verify Peer's SSL vertiicate.
+# Note: if using a default cloudkey certificate, this will fail
+# Default is "yes"
+env.ssl_verify_peer yes
+
+# The human readable name of the unifi site - used for graph titles
+env.name Home
+
+# "Site" string - the internal unifi API site identifier. 
+# default is "default" - found when you connect to the web interface
+# it's the term in the URL - /manage/site/site_string/dashboard
+env.site default

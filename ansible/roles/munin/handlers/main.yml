@@ -1,0 +1,17 @@
+---
+- name: restart-apache2
+  service:
+    name: apache2
+    state: restarted
+
+- name: restart-munin
+  service:
+    name: munin
+    state: restarted
+
+- name: restart-munin-node
+  service:
+    name: munin-node
+    state: restarted
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
