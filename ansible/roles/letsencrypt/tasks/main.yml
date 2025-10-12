@@ -1,0 +1,36 @@
+---
+- apt:
+    name:
+      - certbot
+      - python3-certbot-dns-route53
+    state: latest
+
+- file:
+    path: /root/.aws
+    mode: '0600'
+    state: directory
+
+- copy:
+    src: aws-config
+    dest: /root/.aws/config
+
+- template:
+    src: aws-credentials.j2
+    dest: /root/.aws/credentials
+
+- shell:
+    cmd: certbot certonly -d manicminer.io -d '*.manicminer.io' --dns-route53 -m tom@bamford.io --agree-tos --non-interactive
+  changed_when: '"no action taken" not in issue_cert.stdout'
+  register: issue_cert
+
+- shell:
+    cmd: cat privkey.pem cert.pem chain.pem >combined.pem
+    chdir: /etc/letsencrypt/live/manicminer.io
+  when: issue_cert.changed
+
+- shell:
+    cmd: "openssl pkcs12 -export -out certstore.p12 -inkey privkey.pem -in fullchain.pem -passout pass:"
+    chdir: /etc/letsencrypt/live/manicminer.io
+  when: issue_cert.changed
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
