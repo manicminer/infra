@@ -1,0 +1,32 @@
+(files_config) {
+    root * /var/www/html
+
+    file_server browse
+
+    @network_denied {
+      not remote_ip 127.0.0.0/8 {{ files_allowed_networks | join(' ') }}
+    }
+
+    handle /internal/* {
+        respond @network_denied "Forbidden" 403
+        file_server browse
+    }
+
+    handle /media/* {
+        respond @network_denied "Forbidden" 403
+        file_server browse
+    }
+
+    handle /public/* {
+        file_server browse
+    }
+}
+
+http://{{ server_name }} {
+    import files_config
+}
+
+https://{{ server_name }} {
+    import files_config
+    tls /etc/ssl/manicminer/fullchain.pem /etc/ssl/manicminer/manicminer.key
+}
