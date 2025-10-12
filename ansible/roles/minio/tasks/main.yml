@@ -1,0 +1,26 @@
+---
+
+- user:
+    name: minio
+    group: minio
+    home: /mnt/minio/minio
+
+- file:
+    path: /mnt/minio/data
+    state: directory
+    owner: minio
+    group: minio
+
+- ansible.builtin.apt:
+    deb: "https://dl.min.io/server/minio/release/linux-amd64/archive/minio_20240909165928.0.0_amd64.deb -O minio.deb"
+
+- template:
+    src: minio.service.j2
+    dest: /etc/systemd/system/minio.service
+  register: minio_service
+
+- shell:
+    cmd: systemctl daemon-reload
+  when: minio_service.changed
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
