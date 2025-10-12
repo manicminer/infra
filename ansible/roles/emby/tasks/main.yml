@@ -1,0 +1,16 @@
+---
+- ansible.builtin.apt:
+    deb: "https://github.com/MediaBrowser/Emby.Releases/releases/download/{{ emby_version }}/emby-server-deb_{{ emby_version }}_amd64.deb"
+    state: present
+
+- ansible.builtin.user:
+    name: emby
+    groups: warehouse
+    home: /var/lib/emby
+    append: true
+    system: true
+  notify: restart-emby
+
+- include_tasks: encode-media.yml
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
