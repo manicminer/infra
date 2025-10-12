@@ -1,0 +1,48 @@
+---
+
+- ansible.builtin.apt:
+    name: postfix
+    state: present
+
+- ansible.builtin.copy:
+    dest: /etc/mailname
+    content: "{{ ansible_facts['fqdn'] }}\n"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart-postfix
+
+- ansible.builtin.template:
+    src: main.cf.j2
+    dest: /etc/postfix/main.cf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart-postfix
+
+- ansible.builtin.copy:
+    dest: /etc/postfix/sasl_passwd
+    content: "[{{ postfix['relay_host'] }}]:{{ postfix['relay_port'] }} {{ postfix['relay_user'] }}:{{ postfix['relay_pass'] }}"
+    owner: root
+    group: root
+    mode: '0600'
+  notify: restart-postfix
+  register: sasl_passwd
+
+- ansible.builtin.shell:
+    cmd: "postmap hash:/etc/postfix/sasl_passwd"
+  notify: restart-postfix
+  when: sasl_passwd.changed
+
+- ansible.builtin.file:
+    path: /etc/postfix/sasl_passwd.db
+    owner: root
+    group: root
+    mode: '0600'
+
+- ansible.builtin.service:
+    name: postfix
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
