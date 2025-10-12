@@ -1,0 +1,59 @@
+---
+- hosts: rabbitmq
+  tags: rabbitmq
+  tasks:
+    - shell:
+        cmd: rabbitmqctl enable_feature_flag all
+
+
+- hosts: all
+  tags: apt
+  tasks:
+    - apt:
+        update_cache: yes
+        upgrade: dist
+
+    - apt:
+        autoremove: yes
+
+    - apt:
+        autoclean: yes
+
+
+- hosts: bitwarden
+  tasks:
+    - shell:
+        cmd: ./bitwarden.sh updateself
+        chdir: /opt/bitwarden
+      become: yes
+      become_user: bitwarden
+
+    - shell:
+        cmd: ./bitwarden.sh update
+        chdir: /opt/bitwarden
+      become: yes
+      become_user: bitwarden
+
+
+- hosts: io,pihole
+  tags: pihole
+  tasks:
+    - shell:
+        cmd: pihole -up
+
+
+- hosts: photos
+  tags: photoprism
+  tasks:
+    - shell:
+        cmd: docker-compose pull
+        chdir: /mnt/photos/photoprism/photoprism
+      become: yes
+      become_user: photoprism
+
+    - service:
+        name: photoprism
+        state: restarted
+
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

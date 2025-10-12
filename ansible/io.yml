@@ -1,0 +1,17 @@
+---
+- hosts: work
+  tags: work
+  roles:
+    - nomad
+
+    - role: nginx
+      tags: nginx
+      proxy_port: 8080
+
+  tasks:
+    - pip:
+        name: ansible
+        executable: pip3
+        state: latest
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

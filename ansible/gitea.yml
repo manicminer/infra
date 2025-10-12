@@ -1,0 +1,19 @@
+---
+- hosts: gitea
+  roles:
+    - role: tls
+      tags: tls
+
+    - role: gitea
+      tags: gitea
+      server_name: code.manicminer.io
+
+    - role: caddy
+      tags: caddy
+
+    - role: caddy-proxy
+      tags: caddy
+      proxy_port: 3000
+      server_name: code.manicminer.io
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

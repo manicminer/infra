@@ -1,0 +1,10 @@
+# Rotation for Warehouse logs
+/var/log/warehouse/*.log {
+	weekly
+	rotate 52
+	compress
+	delaycompress
+	missingok
+	notifempty
+	create 664 root warehouse
+}

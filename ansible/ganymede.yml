@@ -1,0 +1,28 @@
+---
+
+- hosts: ganymede
+  roles:
+    - role: postfix
+      tags: postfix
+
+    - role: ups
+      tags:
+        - ups
+        - ups-sol
+      apcupsd_mode: multiple
+      apcupsd_port: 3551
+      ups_name: sol
+      ups_serial: AS0613230449
+      enable_shutdown: true
+
+    - role: ups
+      tags:
+        - ups
+        - ups-sirius
+      apcupsd_mode: multiple
+      apcupsd_port: 3552
+      ups_name: sirius
+      ups_serial: AS0831121551
+      enable_shutdown: false
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

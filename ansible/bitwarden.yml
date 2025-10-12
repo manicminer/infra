@@ -1,0 +1,13 @@
+---
+- hosts: bitwarden
+  roles:
+    - role: docker
+      tags: docker
+
+    - role: tls
+      tags: tls
+
+    - role: bitwarden
+      tags: bitwarden
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

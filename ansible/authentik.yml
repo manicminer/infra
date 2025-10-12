@@ -1,0 +1,21 @@
+---
+- hosts: auth
+  roles:
+    - role: docker
+      tags: docker
+
+    - role: tls
+      tags: tls
+
+    - role: authentik
+      tags: authentik
+
+    - role: caddy
+      tags: caddy
+
+    - role: caddy-proxy
+      tags: caddy
+      proxy_port: 9000
+
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,39 @@
+---
+- hosts: files
+  roles:
+    - role: tls
+      tags: tls
+
+    - role: samba
+      tags: samba
+
+    - role: caddy
+      tags: caddy
+
+    - role: caddy-files
+      tags:
+        - caddy
+        - caddy-files
+
+  tasks:
+    - ansible.builtin.file:
+        path: /var/www/html/index.nginx-debian.html
+        state: absent
+
+    - ansible.builtin.file:
+        src: /mnt/warehouse/internal
+        dest: /var/www/html/internal
+        state: link
+
+    - ansible.builtin.file:
+        src: /mnt/warehouse/media
+        dest: /var/www/html/media
+        state: link
+
+    - ansible.builtin.file:
+        src: /mnt/warehouse/public
+        dest: /var/www/html/public
+        state: link
+
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

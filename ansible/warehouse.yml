@@ -1,0 +1,46 @@
+---
+- hosts: warehouse
+  tasks:
+    - ansible.builtin.group:
+        name: warehouse
+        gid: 14384
+        state: present
+
+    - ansible.builtin.user:
+        name: root
+        groups: warehouse
+        append: true
+
+    - ansible.builtin.file:
+        path: /var/log/warehouse
+        state: directory
+        owner: root
+        group: warehouse
+        mode: '0775'
+
+    - ansible.builtin.copy:
+        src: warehouse-logrotate
+        dest: "/etc/logrotate.d/warehouse"
+        owner: root
+        group: root
+        mode: '0644'
+
+
+- hosts: ganymede
+  tasks:
+    - ansible.builtin.find:
+        path: /mnt/warehouse
+        file_type: directory
+        recurse: false
+        excludes:
+          - backup
+          - "lost+found"
+      register: warehouse_dirs
+
+    - ansible.builtin.file:
+        path: "{{ item.path }}"
+        group: warehouse
+        mode: g+srwX
+      with_items: "{{ warehouse_dirs.files }}"
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
