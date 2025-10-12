@@ -1,0 +1,8 @@
+---
+
+- name: restart-fail2ban
+  ansible.builtin.service:
+    name: fail2ban
+    state: restarted
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
