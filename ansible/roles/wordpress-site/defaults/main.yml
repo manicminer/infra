@@ -1,0 +1,13 @@
+---
+db_password:
+domain_name:
+site_name:
+additional_domains: []
+
+php_version: 8.2
+wordpress_version: 6.6.2
+
+ses_access_key_id:
+ses_secret_access_key:
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
