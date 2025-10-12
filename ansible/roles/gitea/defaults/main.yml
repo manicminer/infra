@@ -1,0 +1,6 @@
+---
+
+gitea_version: 1.24.5
+server_name: "{{ ansible_facts['fqdn'] }}"
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

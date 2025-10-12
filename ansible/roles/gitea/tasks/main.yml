@@ -1,0 +1,49 @@
+---
+
+- ansible.builtin.user:
+    name: git
+    home: /home/git
+    create_home: true
+
+- ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: git
+    group: git
+    mode: '0750'
+  loop:
+    - /etc/gitea
+    - /var/lib/gitea
+
+- ansible.builtin.get_url:
+    url: "https://github.com/go-gitea/gitea/releases/download/v{{ gitea_version }}/gitea-{{ gitea_version }}-linux-amd64"
+    dest: /usr/local/bin/gitea
+    owner: root
+    group: root
+    mode: '0755'
+  notify: restart-gitea
+
+- ansible.builtin.template:
+    src: app.ini.j2
+    dest: /etc/gitea/app.ini
+    owner: git
+    group: git
+    mode: '0600'
+  notify: restart-gitea
+
+- ansible.builtin.template:
+    src: gitea.service.j2
+    dest: /etc/systemd/system/gitea.service
+  notify: restart-gitea
+  register: gitea_service
+
+- shell:
+    cmd: systemctl daemon-reload
+  when: gitea_service.changed
+
+- ansible.builtin.service:
+    name: gitea
+    enabled: true
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,98 @@
+APP_NAME = Gitea
+RUN_USER = git
+RUN_MODE = prod
+WORK_PATH = /var/lib/gitea
+
+[oauth2]
+JWT_SECRET = {{ jwt_secret }}
+
+[security]
+INTERNAL_TOKEN = {{ internal_token }}
+INSTALL_LOCK = true
+MIN_PASSWORD_LENGTH = 12
+SECRET_KEY = {{ secret_key }}
+
+[server]
+PROTOCOL = http
+ROOT_URL = https://{{ server_name }}/
+HTTP_ADDR = 127.0.0.1
+HTTP_PORT = 3000
+#CERT_FILE = /etc/gitea/fullchain.pem
+#KEY_FILE = /etc/gitea/privkey.pem
+SSH_DOMAIN = {{ server_name }}
+DOMAIN = {{ server_name }}
+DISABLE_SSH = false
+SSH_PORT = 22
+LFS_START_SERVER = true
+LFS_JWT_SECRET = {{ lfs_jwt_secret }}
+OFFLINE_MODE = false
+
+[database]
+DB_TYPE = postgres
+HOST = postgres.manicminer.io
+NAME = gitea
+USER = gitea
+PASSWD = {{ db_password }}
+SCHEMA =
+SSL_MODE = disable
+CHARSET = utf8
+PATH = /var/lib/gitea/data/gitea.db
+
+[repository]
+ROOT = /var/lib/gitea/repositories
+DEFAULT_BRANCH = main
+DEFAULT_PRIVATE = private
+ENABLE_PUSH_CREATE_USER = true
+ENABLE_PUSH_CREATE_ORG = true
+
+[mailer]
+ENABLED = true
+SMTP_ADDR = email.eu-west-2.amazonaws.com
+FROM = Gitea <gitea@gitea.manicminer.io>
+USER = {{ smtp_user }}
+PASSWD = {{ smtp_pass }}
+
+[service]
+REGISTER_EMAIL_CONFIRM = false
+ENABLE_NOTIFY_MAIL = true
+DISABLE_REGISTRATION = true
+ALLOW_ONLY_EXTERNAL_REGISTRATION = false
+ENABLE_CAPTCHA = false
+REQUIRE_SIGNIN_VIEW = false
+DEFAULT_KEEP_EMAIL_PRIVATE = false
+DEFAULT_ALLOW_CREATE_ORGANIZATION = true
+DEFAULT_ENABLE_TIMETRACKING = true
+NO_REPLY_ADDRESS = no-reply@{{ server_name }}
+
+[picture]
+DISABLE_GRAVATAR = false
+ENABLE_FEDERATED_AVATAR = true
+
+[openid]
+ENABLE_OPENID_SIGNIN = true
+ENABLE_OPENID_SIGNUP = false
+
+[session]
+PROVIDER = file
+
+[log]
+MODE = file
+LEVEL = info
+ROOT_PATH = /var/lib/gitea/log
+
+[ui]
+DEFAULT_THEME = gitea-auto
+EXPLORE_PAGING_NUM = 100
+ISSUE_PAGING_NUM = 100
+FEED_PAGING_NUM = 100
+
+[cron]
+ENABLED = true
+
+[metrics]
+ENABLED = true
+
+[lfs]
+PATH = /var/lib/gitea/data/lfs
+
+# vim: set ft=ini ts=2 sts=2 sw=2 et:
