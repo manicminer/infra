@@ -1,0 +1,21 @@
+{  
+	log default {  
+		format console  
+		output file /var/log/caddy/system.log  
+		exclude http.log.access  
+	}
+}
+
+{% if enable_fqdn_static %}
+{{ ansible_facts['fqdn'] }} {
+    handle {
+        header Content-Type text/html
+        respond "<html><body><h1>{{ ansible_facts['fqdn'] }}</h1></body></html>" 200
+    }
+}
+{% endif %}
+
+import config/*  
+import sites/*
+
+# vim: set ft=Caddyfile ts=4 sts=4 sw=4:
