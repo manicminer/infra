@@ -1,0 +1,18 @@
+[Unit]
+Description=Authentik
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/authentik/authentik
+ExecStartPre=/usr/local/bin/docker-compose pull
+ExecStart=/usr/local/bin/docker-compose up -d
+ExecStop=/usr/local/bin/docker-compose down
+TimeoutStartSec=0
+User=authentik
+Group=authentik
+
+[Install]
+WantedBy=multi-user.target
