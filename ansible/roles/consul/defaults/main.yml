@@ -1,0 +1,8 @@
+---
+# server or agent
+service_type: server
+
+# whether agent runs docker (will bind to default docker interface IP)
+agent_has_docker: false
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

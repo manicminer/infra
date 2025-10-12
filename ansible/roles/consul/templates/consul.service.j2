@@ -1,0 +1,25 @@
+[Unit]
+Description="HashiCorp Consul - A service mesh solution"
+Documentation=https://www.consul.io/
+Requires=network-online.target
+After=network-online.target
+ConditionFileNotEmpty=/etc/consul.d/consul.hcl
+
+[Service]
+Type=notify
+User=consul
+Group=consul
+{% if service_type == "server" %}
+ExecStart=/usr/bin/consul agent -config-dir=/etc/consul.d/
+{% else %}
+#ExecStart=/usr/bin/consul agent -config-dir=/etc/consul.d/ -bind {{ ansible_facts['default_ipv4']['address'] }}
+ExecStart=/usr/bin/consul agent -config-dir=/etc/consul.d/ -bind {{ ansible_facts['all_ipv4_addresses'] | ipaddr('10.11.12.0/24') | first }}
+{% endif %}
+ExecReload=/bin/kill --signal HUP $MAINPID
+KillMode=process
+KillSignal=SIGTERM
+Restart=on-failure
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

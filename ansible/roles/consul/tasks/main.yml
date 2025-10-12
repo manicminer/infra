@@ -1,0 +1,82 @@
+---
+- apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+    state: present
+
+- apt_repository:
+    repo: "deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_facts['distribution_release'] }} main"
+    update_cache: yes
+    state: present
+
+- apt:
+    name: consul
+    state: present
+
+- file:
+    path: /etc/consul.d
+    state: directory
+
+- template:
+    src: home_server_consul_0_key.pem.j2
+    dest: /etc/consul.d/home-server-consul-0-key.pem
+    owner: consul
+    group: consul
+  when: service_type == "server"
+
+- copy:
+    src: home-server-consul-0.pem
+    dest: /etc/consul.d/home-server-consul-0.pem
+    owner: consul
+    group: consul
+  when: service_type == "server"
+
+- template:
+    src: consul_agent_ca_key.pem.j2
+    dest: /etc/consul.d/consul-agent-ca-key.pem
+    owner: consul
+    group: consul
+  when: service_type == "server"
+
+- copy:
+    src: consul-agent-ca.pem
+    dest: /etc/consul.d/consul-agent-ca.pem
+    owner: consul
+    group: consul
+
+- copy:
+    src: consul-key.txt
+    dest: /etc/consul.d/consul-key.txt
+    owner: consul
+    group: consul
+
+- template:
+    src: home_client_consul_0_key.pem.j2
+    dest: /etc/consul.d/home-client-consul-0-key.pem
+    owner: consul
+    group: consul
+
+- copy:
+    src: home-client-consul-0.pem
+    dest: /etc/consul.d/home-client-consul-0.pem
+    owner: consul
+    group: consul
+
+- template:
+    src: consul.hcl.j2
+    dest: /etc/consul.d/consul.hcl
+    owner: consul
+    group: consul
+  register: consul_conf
+
+- template:
+    src: consul.service.j2
+    dest: /etc/systemd/system/consul.service
+  register: consul_service
+
+- service:
+    name: consul
+    enabled: yes
+    state: restarted
+  when: consul_conf.changed or consul_service.changed
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
