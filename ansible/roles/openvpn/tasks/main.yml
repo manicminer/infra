@@ -1,0 +1,13 @@
+---
+
+- ansible.builtin.shell:
+    cmd: /usr/local/openvpn_as/scripts/sacli --key "{{ item.key }}" --value_file "/etc/ssl/manicminer/{{ item.value }}" ConfigPut
+  loop: "{{ safiles | dict2items }}"
+  vars:
+    safiles:
+      cs.priv_key: manicminer.key
+      cs.cert: manicminer.pem
+      cs.ca_bundle: chain.pem
+  notify: restart-openvpnas
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
