@@ -1,0 +1,36 @@
+---
+- ansible.builtin.apt:
+    name: samba
+    state: present
+
+- ansible.builtin.template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+    #notify: restart-smbd
+
+- ansible.builtin.group:
+    name: users
+    state: present
+
+- ansible.builtin.user:
+    name: "{{ item }}"
+    groups: users
+    append: yes
+    home: /home/{{ item }}
+    shell: /sbin/nologin
+    state: present
+  loop: "{{ users }}"
+
+- ansible.builtin.file:
+    path: /mnt/warehouse/timemachine/{{ item }}
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    state: directory
+  loop: "{{ users }}"
+
+- ansible.builtin.service:
+    name: smbd
+    enabled: true
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
