@@ -1,0 +1,28 @@
+---
+- lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "{{ item[0] }} {{ item[1] }}"
+    regexp: "^#?{{ item[0] }}"
+  loop:
+    - ["GSSAPIAuthentication", "no"]
+    - ["KbdInteractiveAuthentication", "no"]
+    - ["KerberosAuthentication", "no"]
+    - ["PasswordAuthentication", "no"]
+    - ["PrintMotd", "no"]
+    - ["PrintLastLog", "yes"]
+    - ["UseDNS", "no"]
+    - ["X11Forwarding", "no"]
+  notify: restart-sshd
+
+- copy:
+    src: config
+    dest: /root/.ssh/config
+    mode: '0600'
+
+- file:
+    path: /root/.hushlogin
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
