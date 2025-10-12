@@ -1,0 +1,50 @@
+---
+
+- ansible.builtin.user:
+    name: photoprism
+    home: "{{ home_dir }}"
+    create_home: true
+    groups: docker
+    append: true
+    shell: /bin/bash
+    system: true
+
+- ansible.builtin.file:
+    path: "{{ home_dir }}/photoprism"
+    owner: photoprism
+    group: photoprism
+    state: directory
+
+- ansible.builtin.file:
+    path: /mnt/photos/originals
+    owner: photoprism
+    group: photoprism
+    state: directory
+
+- ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ home_dir }}/photoprism/docker-compose.yml"
+    owner: photoprism
+    group: photoprism
+  notify: restart-photoprism
+
+- ansible.builtin.apt:
+    pkg: python3-docker
+    state: latest
+
+- ansible.builtin.template:
+    src: photoprism.service.j2
+    dest: /etc/systemd/system/photoprism.service
+  register: photoprism_service
+  notify: restart-photoprism
+
+- ansible.builtin.shell:
+    cmd: systemctl daemon-reload
+  when: photoprism_service.changed
+
+- ansible.builtin.service:
+    name: photoprism
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
