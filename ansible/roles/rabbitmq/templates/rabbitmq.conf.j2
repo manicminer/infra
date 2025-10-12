@@ -1,0 +1,3 @@
+{% for ip in rabbitmq_listen_addresses %}
+listeners.tcp.{{ loop.index }} = {{ ip }}:5672
+{% endfor %}
