@@ -1,0 +1,39 @@
+{{ phpmyadmin_domain_name }}:{{ phpmyadmin_port }} {
+	root * /var/www/phpmyadmin
+
+    tls /etc/ssl/manicminer/fullchain.pem /etc/ssl/manicminer/manicminer.key
+
+	log {
+		output file /var/log/caddy/phpmyadmin.access.log
+		format console
+	}
+
+	@admin_denied {
+		not remote_ip 127.0.0.0/8 {{ phpmyadmin_allowed_networks | join(' ') }}
+	}
+
+	@disallowed {
+		path /config.inc.php
+	}
+
+	@dotfiles {
+		path */.*
+		not path /.well-known/*
+	}
+
+	respond @admin_denied 403
+	respond @disallowed 403
+	respond @dotfiles 403
+
+	# Encode responses in zstd or gzip, depending on the
+	# availability indicated by the browser.
+	encode zstd gzip
+
+	file_server
+
+	php_fastcgi unix///run/php/php{{ php_version }}-fpm.sock {
+		capture_stderr
+	}
+}
+
+# vim: set ft=Caddyfile ts=4 sts=4 sw=4:

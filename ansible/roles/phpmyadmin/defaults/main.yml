@@ -1,0 +1,8 @@
+---
+php_version: 8.2
+
+phpmyadmin_domain_name: "{{ ansible_facts['fqdn'] }}"
+phpmyadmin_port: 4482
+phpmyadmin_version: 5.2.2
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

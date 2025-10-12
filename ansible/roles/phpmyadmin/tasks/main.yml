@@ -1,0 +1,43 @@
+---
+
+- ansible.builtin.unarchive:
+    src: "https://files.phpmyadmin.net/phpMyAdmin/{{ phpmyadmin_version }}/phpMyAdmin-{{ phpmyadmin_version }}-all-languages.tar.gz"
+    dest: /var/www
+    remote_src: true
+    creates: /var/www/phpmyadmin
+
+- ansible.builtin.shell:
+    cmd: "mv /var/www/phpMyAdmin-{{ phpmyadmin_version }}-all-languages /var/www/phpmyadmin"
+    creates: /var/www/phpmyadmin
+
+- ansible.builtin.template:
+    src: config.inc.php.j2
+    dest: /var/www/phpmyadmin/config.inc.php
+    owner: www-data
+    group: www-data
+    mode: '0400'
+
+- ansible.builtin.file:
+    path: /var/www/phpmyadmin/tmp
+    owner: www-data
+    group: www-data
+    mode: '0750'
+    state: directory
+
+- community.mysql.mysql_db:
+    name: "{{ phpmyadmin_sql_db }}"
+    state: import
+    encoding: utf8
+    target: /var/www/phpmyadmin/sql/create_tables.sql
+
+- community.mysql.mysql_user:
+    name: "{{ phpmyadmin_sql_user }}"
+    password: "{{ phpmyadmin_sql_pass }}"
+    priv: "{{ phpmyadmin_sql_db }}.*:ALL"
+
+- ansible.builtin.template:
+    src: site.conf.j2
+    dest: "/etc/caddy/sites/phpmyadmin.conf"
+  notify: restart-caddy
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
