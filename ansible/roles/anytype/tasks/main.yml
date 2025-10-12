@@ -1,0 +1,36 @@
+---
+
+- ansible.builtin.user:
+    name: anytype
+    home: "{{ home_dir }}"
+    create_home: true
+    groups: docker
+    append: true
+    shell: /bin/bash
+    system: true
+
+- file:
+    path: "{{ item }}"
+    owner: anytype
+    group: anytype
+    state: directory
+  loop:
+    - "{{ home_dir }}"
+    - "{{ home_dir }}/storage"
+
+- ansible.builtin.git:
+    repo: 'https://github.com/anyproto/any-sync-dockercompose.git'
+    dest: "{{ home_dir }}/any-sync-dockercompose"
+    version: v5.0.3
+  become: true
+  become_user: anytype
+
+- template:
+    src: env.override.j2
+    dest: "{{ home_dir }}/any-sync-dockercompose/.env.override"
+    owner: anytype
+    group: anytype
+    mode: '0600'
+
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
