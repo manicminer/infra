@@ -1,0 +1,9 @@
+---
+
+- name: restart-dns
+  shell: pihole restartdns
+
+- name: restart-pihole
+  shell: systemctl restart pihole-FTL
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

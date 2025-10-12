@@ -1,0 +1,13 @@
+no-hosts
+
+{% for domain, servers in upstream_resolvers.items() %}
+{% for server in servers %}
+server=/{{ domain }}/{{ server }}
+{% endfor %}
+{% endfor %}
+
+{% for cidr, servers in reverse_resolvers.items() %}
+{% for server in servers %}
+rev-server={{ cidr }},{{ server }}
+{% endfor %}
+{% endfor %}
