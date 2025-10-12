@@ -1,0 +1,9 @@
+{% if postgresql_overrides is defined %}
+[Unit]
+{% if 'wants' in postgresql_overrides %}
+Wants={{ postgresql_overrides.wants | join(' ') }}
+{% endif %}
+{% if 'after' in postgresql_overrides %}
+After={{ postgresql_overrides.after | join(' ') }}
+{% endif %}
+{% endif %}

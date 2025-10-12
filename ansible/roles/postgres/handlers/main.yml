@@ -1,0 +1,12 @@
+---
+- name: restart-postgresql
+  service:
+    name: postgresql
+    state: restarted
+
+- name: restart-pgadmin
+  service:
+    name: pgadmin4
+    state: restarted
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
