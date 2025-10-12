@@ -1,0 +1,27 @@
+---
+- name: Install dependencies
+  apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: present
+
+- name: Trust apt signing key
+  apt_key:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+
+- name: Add repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ {{ ansible_facts['distribution_release'] }} main"
+    state: present
+
+- name: Install Azure CLI
+  apt:
+    pkg: azure-cli
+    state: latest
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
