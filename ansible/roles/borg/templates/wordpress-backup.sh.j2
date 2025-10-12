@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [[ -z "${1}" ]]; then
+  echo "wordpress site not specified" >&2
+  exit 1
+fi
+
+site_name="${1}"
+db_name="${1}"
+tmp_dir="$(mktemp -d)"
+sql_dump_file="${tmp_dir}/${db_name}.sql"
+today="$(date -Iseconds)"
+
+source "${HOME}/.borg-passphrase"
+
+set -e
+
+mariadb-dump "${db_name}" >"${sql_dump_file}"
+borg create "{{ borg_archive_root }}${site_name}::${today}" "${sql_dump_file}" "/var/www/${site_name}"
+
+rm -r "${tmp_dir}"
+
+exit 0
