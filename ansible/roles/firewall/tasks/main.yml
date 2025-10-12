@@ -1,0 +1,10 @@
+---
+
+- ansible.builtin.include_tasks: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_facts['system'] | lower }}.yml"
+      paths: "{{ playbook_dir }}/roles/{{ role_name }}/tasks"
+      skip: true
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
