@@ -1,0 +1,28 @@
+---
+
+services:
+  opensign-server:
+    image: opensign/opensignserver:main
+    volumes:
+      - opensign-files:/usr/src/app/files
+    ports:
+      - "127.0.0.1:9002:8080"
+    env_file: opensign-env
+    networks:
+      - opensign
+
+  opensign-client:
+    image: opensign/opensign:main
+    env_file: opensign-env
+    ports:
+      - "127.0.0.1:9003:3000"
+    networks:
+      - opensign
+    depends_on:
+      - opensign-server
+
+networks:
+  opensign:
+
+volumes:
+  opensign-files:
