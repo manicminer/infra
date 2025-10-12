@@ -1,0 +1,50 @@
+---
+
+- ansible.builtin.apt:
+    name: ssl-cert
+    state: present
+
+- ansible.builtin.file:
+    path: /etc/ssl/manicminer
+    state: directory
+    owner: root
+    group: ssl-cert
+    mode: '0750'
+
+- ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/etc/ssl/manicminer/{{ item }}"
+    owner: root
+    group: ssl-cert
+    mode: '0644'
+  loop:
+    - manicminer.csr
+    - manicminer.pem
+    - chain.pem
+
+- ansible.builtin.template:
+    src: manicminer.key.j2
+    dest: /etc/ssl/manicminer/manicminer.key
+    owner: root
+    group: ssl-cert
+    mode: '0640'
+
+- ansible.builtin.template:
+    src: combined.pem.j2
+    dest: /etc/ssl/manicminer/combined.pem
+    owner: root
+    group: ssl-cert
+    mode: '0640'
+
+- ansible.builtin.shell:
+    cmd: "openssl pkcs12 -inkey manicminer.key -in fullchain.pem -export -passout pass: -out manicminer.pfx"
+    chdir: /etc/ssl/manicminer
+    creates: /etc/ssl/manicminer/manicminer.pfx
+
+- ansible.builtin.file:
+    path: /etc/ssl/manicminer/manicminer.pfx
+    owner: root
+    group: ssl-cert
+    mode: '0640'
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
