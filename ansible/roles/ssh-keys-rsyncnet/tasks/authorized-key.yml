@@ -1,0 +1,16 @@
+---
+
+- block:
+    - ansible.builtin.shell:
+        cmd: "ssh {{ rsyncnet_user }}@{{ inventory_hostname }} cat .ssh/authorized_keys | grep -q '{{ ssh_key }}'"
+      register: key_check
+      changed_when: false
+      failed_when: key_check.rc > 1
+    
+    - local_action:
+        module: ansible.builtin.shell
+        cmd: "echo '{{ ssh_key }}' | ssh {{ rsyncnet_user }}@{{ inventory_hostname }} dd of=.ssh/authorized_keys oflag=append conv=notrunc"
+      when: key_check.rc == 1
+  delegate_to: localhost
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
