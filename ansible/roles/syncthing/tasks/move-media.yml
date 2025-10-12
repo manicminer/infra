@@ -1,0 +1,21 @@
+---
+
+- ansible.builtin.apt:
+    name: moreutils
+    state: present
+
+- ansible.builtin.copy:
+    src: move-media.sh
+    dest: /home/syncthing/move-media.sh
+    owner: syncthing
+    group: syncthing
+    mode: '0755'
+
+- ansible.builtin.cron:
+    name: move-media
+    user: syncthing
+    minute: "*/5"
+    job: "/home/syncthing/move-media.sh | ts 1>>/var/log/warehouse/move-media.log 2>>/var/log/warehouse/move-media.log"
+    state: present
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,21 @@
+[Unit]
+Description=SYncthing
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+User=syncthing
+UMask=2002
+ExecStart=/usr/bin/syncthing serve --no-browser --no-restart --logflags=0 --gui-address=0.0.0.0:8384
+Restart=on-failure
+RestartSec=1
+SuccessExitStatus=3 4
+RestartForceExitStatus=3 4
+ProtectSystem=full
+PrivateTmp=true
+SystemCallArchitectures=native
+MemoryDenyWriteExecute=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,45 @@
+---
+
+- ansible.builtin.get_url:
+    url: https://syncthing.net/release-key.gpg
+    dest: /usr/share/keyrings/syncthing-archive-keyring.gpg
+    mode: '0644'
+    force: true
+
+- apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing stable"
+    update_cache: yes
+    state: present
+
+- user:
+    name: syncthing
+    create_home: true
+    groups: warehouse
+    append: true
+    shell: /bin/bash
+    system: true
+  notify: restart-syncthing
+
+- apt:
+    name: syncthing
+    state: present
+  notify: restart-syncthing
+
+- template:
+    src: syncthing.service.j2
+    dest: /etc/systemd/system/syncthing.service
+  notify: restart-syncthing
+  register: syncthing_service
+
+- shell:
+    cmd: systemctl daemon-reload
+  when: syncthing_service.changed
+
+- service:
+    name: syncthing
+    enabled: yes
+    state: started
+
+- include_tasks: move-media.yml
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
