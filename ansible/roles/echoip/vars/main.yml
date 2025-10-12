@@ -1,0 +1,9 @@
+---
+home_dir: /home/echoip
+
+echoip:
+  listen_port: 80
+  remote_header: X-Forwarded-For
+  maxmind_db_dir: /var/local/maxmind
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

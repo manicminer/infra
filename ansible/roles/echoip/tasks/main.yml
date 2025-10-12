@@ -1,0 +1,42 @@
+---
+
+- ansible.builtin.user:
+    name: echoip
+    home: "{{ home_dir }}"
+    create_home: true
+    groups: docker
+    append: true
+    shell: /bin/bash
+    system: true
+
+- block:
+    - ansible.builtin.file:
+        path: "{{ home_dir }}/docker"
+        mode: '0755'
+        state: directory
+
+    - ansible.builtin.template:
+        src: docker-compose.yml.j2
+        dest: "{{ home_dir }}/docker/docker-compose.yml"
+        mode: '0644'
+      notify: restart-echoip
+
+  become: true
+  become_user: echoip
+
+- template:
+    src: echoip.service.j2
+    dest: /etc/systemd/system/echoip.service
+  register: echoip_service
+  notify: restart-echoip
+
+- shell:
+    cmd: systemctl daemon-reload
+  when: echoip_service.changed
+
+- service:
+    name: echoip
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
