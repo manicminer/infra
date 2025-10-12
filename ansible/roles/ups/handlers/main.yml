@@ -1,0 +1,17 @@
+---
+- name: restart-apcupsd
+  service:
+    name: apcupsd
+    state: restarted
+
+- name: restart-apcupsd-all
+  service:
+    name: 'apcupsd@*'
+    state: restarted
+
+- name: restart-apcupsd-instance
+  service:
+    name: "apcupsd@{{ ups_name }}"
+    state: restarted
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,8 @@
+---
+apcupsd_mode: ""
+apcupsd_port: 0
+ups_name: ""
+ups_serial: ""
+enable_shutdown: false
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

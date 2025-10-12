@@ -1,0 +1,17 @@
+---
+- ansible.builtin.template:
+    src: apcupsd.conf.j2
+    dest: /etc/apcupsd/apcupsd.conf
+  notify: restart-apcupsd
+
+- ansible.builtin.service:
+    name: apcupsd
+    enabled: yes
+    state: started
+
+- ansible.builtin.service:
+    name: nutwrapper
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
