@@ -1,0 +1,27 @@
+---
+- apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/7.x/apt stable main"
+    update_cache: yes
+    state: present
+
+- apt:
+    name:
+      - elasticsearch
+      - filebeat
+    state: present
+
+- copy:
+    src: elasticsearch.yml
+    dest: /etc/elasticsearch/elasticsearch.yml
+  notify: restart-elasticsearch
+
+- service:
+    name: elasticsearch
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
