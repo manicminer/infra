@@ -1,0 +1,29 @@
+---
+
+- ansible.builtin.deb822_repository:
+    name: mongodb
+    types: deb
+    uris: "https://repo.mongodb.org/apt/{{ ansible_facts['distribution'] | lower }}"
+    suites: "{{ mongodb_distribution }}/mongodb-org/{{ mongodb_version }}"
+    components: multiverse
+    architectures: amd64
+    signed_by: "https://www.mongodb.org/static/pgp/server-{{ mongodb_version }}.asc"
+    trusted: "{{ mongodb_expired_signing_key }}"
+
+- ansible.builtin.apt:
+    name: mongodb-org
+    state: present
+    update_cache: yes
+
+- ansible.builtin.template:
+    src: mongod.conf.j2
+    dest: /etc/mongod.conf
+    mode: '0644'
+  notify: restart-mongod
+
+- ansible.builtin.service:
+    name: mongod
+    enabled: true
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
