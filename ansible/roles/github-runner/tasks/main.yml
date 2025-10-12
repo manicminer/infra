@@ -1,0 +1,74 @@
+---
+- name: Install useful tools
+  apt:
+    pkg:
+      - build-essential
+    state: present
+
+- name: Create user
+  user:
+    name: github
+    home: /home/github
+    state: present
+
+- block:
+    - name: Create runner directory
+      file:
+        path: "/home/github/{{ repo }}"
+        state: directory
+
+    - name: Download installer
+      unarchive:
+        src: "https://github.com/actions/runner/releases/download/v{{ runner_version }}/actions-runner-linux-x64-{{ runner_version }}.tar.gz"
+        dest: "/home/github/{{ repo }}"
+        remote_src: yes
+      register: new_runner_version
+      notify: restart-runner
+
+    #- name: Delete existing config
+    #  file:
+    #    path: "/home/github/{{ repo }}/.runner"
+    #    state: absent
+    #  when: new_runner_version.changed
+
+    - name: Configure runner
+      shell:
+        cmd: ./config.sh --url "https://github.com/{{ repo }}" --token "{{ token }}" --name "{{ runner_name }}" --unattended --replace
+        chdir: "/home/github/{{ repo }}"
+        creates: "/home/github/{{ repo }}/.runner"
+      notify: restart-runner
+
+    - name: Set environment variables
+      lineinfile:
+        path: "/home/github/{{ repo }}/.env"
+        regexp: "^{{ item.name }}="
+        line: "{{ item.name }}={{ item.value }}"
+      loop: "{{ runner_env_vars }}"
+      notify: restart-runner
+
+  become: yes
+  become_user: github
+
+- set_fact:
+    service_name: "actions.runner.{{ repo | replace('/', '-') }}.github-runner"
+
+- name: Delete existing service
+  file:
+    path: "/etc/systemd/system/{{ service_name }}.service"
+    state: absent
+  when: new_runner_version.changed
+
+- name: Install service
+  shell:
+    cmd: ./svc.sh install github
+    chdir: "/home/github/{{ repo }}"
+    creates: "/etc/systemd/system/{{ service_name }}.service"
+  notify: restart-runner
+
+- name: Enable and start service
+  service:
+    name: "{{ service_name }}"
+    state: started
+    enabled: yes
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
