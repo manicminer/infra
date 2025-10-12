@@ -1,0 +1,20 @@
+server {
+  listen 80;
+  listen 443 ssl;
+  root /var/www/html;
+  server_name {{ ansible_facts['fqdn'] }};
+  ssl_certificate /etc/ssl/manicminer/fullchain.pem;
+  ssl_certificate_key /etc/ssl/manicminer/manicminer.key;
+
+  location /media {
+    alias /mnt/warehouse/media;
+    autoindex on;
+  }
+
+  location /public {
+    alias /mnt/warehouse/public;
+    autoindex on;
+  }
+}
+
+# vim: set ft=nginx ts=2 sts=2 sw=2 et:

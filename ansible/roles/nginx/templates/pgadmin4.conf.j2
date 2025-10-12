@@ -1,0 +1,35 @@
+server {
+  listen 80;
+  server_name {{ server_name }};
+  return 301 https://{{ server_name }}$request_uri;
+}
+
+server {
+{% if listen | length == 0 %}
+  listen 443 ssl;
+{% else %}
+{% for line in listen %}
+  listen {{ line }};
+{% endfor %}
+{% endif %}
+  server_name {{ server_name }};
+  ssl_certificate /etc/ssl/manicminer/fullchain.pem;
+  ssl_certificate_key /etc/ssl/manicminer/manicminer.key;
+
+  client_max_body_size 0;
+  proxy_read_timeout 1200;
+  proxy_connect_timeout 240;
+
+  location / {
+    try_files $uri @pgadmin4;
+  }
+
+  location @pgadmin4 {
+    rewrite ^/pgadmin4(.*)$ /$1 break;
+    include uwsgi_params;
+    uwsgi_param REQUEST_URI $uri$is_args$args;
+    uwsgi_pass {{ uwsgi_sock }};
+  }
+}
+
+# vim: set ft=nginx ts=2 sts=2 sw=2 et:

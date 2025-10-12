@@ -1,0 +1,11 @@
+---
+site_name: default
+site_template: proxy.conf.j2
+listen: []
+proxy_host: localhost
+proxy_port: 8080
+proxy_ssl: no
+server_name: "{{ ansible_facts['fqdn'] }}"
+uwsgi_sock: ""
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
