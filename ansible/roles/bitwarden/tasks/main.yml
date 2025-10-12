@@ -1,0 +1,85 @@
+---
+- ansible.builtin.user:
+    name: bitwarden
+    groups: docker
+    home: /opt/bitwarden
+    create_home: true
+    append: true
+    system: true
+  notify: restart-bitwarden
+
+- ansible.builtin.get_url:
+    url: "https://func.bitwarden.com/api/dl/?app=self-host&platform=linux"
+    dest: /opt/bitwarden/bitwarden.sh
+    owner: bitwarden
+    group: bitwarden
+    mode: '0755'
+
+- ansible.builtin.file:
+    path: /opt/bitwarden/bwdata/ssl
+    owner: bitwarden
+    group: bitwarden
+    state: directory
+
+- ansible.builtin.shell:
+    cmd: /opt/bitwarden/bitwarden.sh install
+    creates: /opt/bitwarden/bwdata
+  become: true
+  become_user: bitwarden
+
+- ansible.builtin.shell:
+    cmd: openssl dhparam -out /opt/bitwarden/bwdata/ssl/dhparam.pem 2048
+    creates: /opt/bitwarden/bwdata/ssl/dhparam.pem
+  become: true
+  become_user: bitwarden
+
+- ansible.builtin.copy:
+    src: "/etc/ssl/manicminer/{{ item.key }}"
+    dest: "/opt/bitwarden/bwdata/ssl/{{ item.value }}"
+    owner: bitwarden
+    group: bitwarden
+    remote_src: true
+  with_dict:
+    fullchain.pem: cert.pem
+    chain.pem: ca.pem
+    manicminer.key: private.key
+  notify: restart-bitwarden
+
+- ansible.builtin.template:
+    src: config.yml.j2
+    dest: "/opt/bitwarden/bwdata/config.yml"
+    owner: bitwarden
+    group: bitwarden
+  notify:
+    - rebuild-bitwarden
+    - restart-bitwarden
+
+- ansible.builtin.shell:
+    cmd: "id bitwarden | sed 's/.*uid=\\([0-9]\\+\\).*/\\1/'"
+  register: bitwarden_id_uid
+
+- ansible.builtin.shell:
+    cmd: "id bitwarden | sed 's/.*gid=\\([0-9]\\+\\).*/\\1/'"
+  register: bitwarden_id_gid
+
+- set_fact:
+    bitwarden_uid: "{{ bitwarden_id_uid.stdout }}"
+    bitwarden_gid: "{{ bitwarden_id_gid.stdout }}"
+
+- ansible.builtin.template:
+    src: uid.env.j2
+    dest: /opt/bitwarden/bwdata/env/uid.env
+    owner: bitwarden
+    group: bitwarden
+  notify: restart-bitwarden
+
+- ansible.builtin.lineinfile:
+    path: "/opt/bitwarden/bwdata/env/global.override.env"
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+  loop: "{{ bitwarden_env_vars | dict2items }}"
+  become: true
+  become_user: bitwarden
+  notify: restart-bitwarden
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
