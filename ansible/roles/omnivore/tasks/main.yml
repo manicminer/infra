@@ -1,0 +1,48 @@
+---
+
+- ansible.builtin.user:
+    name: omnivore
+    home: "{{ home_dir }}"
+    create_home: true
+    groups: docker
+    append: true
+    shell: /bin/bash
+    system: true
+
+- block:
+    - ansible.builtin.file:
+        path: "{{ home_dir }}/docker"
+        mode: '0755'
+        state: directory
+
+    - ansible.builtin.template:
+        src: env.j2
+        dest: "{{ home_dir }}/docker/.env"
+        mode: '0600'
+      notify: restart-omnivore
+
+    - ansible.builtin.template:
+        src: docker-compose.yml.j2
+        dest: "{{ home_dir }}/docker/docker-compose.yml"
+        mode: '0644'
+      notify: restart-omnivore
+
+  become: true
+  become_user: omnivore
+
+- template:
+    src: omnivore.service.j2
+    dest: /etc/systemd/system/omnivore.service
+  register: omnivore_service
+  notify: restart-omnivore
+
+- shell:
+    cmd: systemctl daemon-reload
+  when: omnivore_service.changed
+
+- service:
+    name: omnivore
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
