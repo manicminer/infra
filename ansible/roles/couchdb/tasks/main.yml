@@ -1,0 +1,71 @@
+---
+
+- ansible.builtin.user:
+    name: couchdb
+    group: couchdb
+    home: /mnt/obsidian/couchdb
+    create_home: true
+    system: true
+
+- ansible.builtin.file:
+    path: /mnt/obsidian/data
+    owner: couchdb
+    group: couchdb
+    state: directory
+
+- ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+
+- ansible.builtin.get_url:
+    url: "https://couchdb.apache.org/repo/keys.asc"
+    dest: /etc/apt/keyrings/couchdb.asc
+    mode: '0644'
+    force: true
+
+- ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/couchdb.asc] https://apache.jfrog.io/artifactory/couchdb-deb/ {{ ansible_facts['distribution_release'] }} main"
+    update_cache: yes
+    state: present
+
+- ansible.builtin.debconf:
+    name: couchdb
+    question: couchdb/mode
+    value: standalone
+    vtype: select
+
+#- ansible.builtin.debconf:
+#    name: couchdb
+#    question: couchdb/bindaddress
+#    value: '0.0.0.0'
+#    vtype: string
+
+- ansible.builtin.debconf:
+    name: couchdb
+    question: couchdb/adminpass
+    value: "{{ admin_password }}"
+    vtype: password
+
+- ansible.builtin.debconf:
+    name: couchdb
+    question: couchdb/adminpass_again
+    value: "{{ admin_password }}"
+    vtype: password
+
+- ansible.builtin.debconf:
+    name: couchdb
+    question: couchdb/cookie
+    value: "{{ couchdb_cookie }}"
+    vtype: string
+
+- ansible.builtin.apt:
+    name: couchdb
+    state: present
+
+- ansible.builtin.template:
+    src: local.ini.j2
+    dest: /opt/couchdb/etc/local.ini
+    mode: '0640'
+  notify: restart-couchdb
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
