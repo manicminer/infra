@@ -1,0 +1,21 @@
+function FindProxyForURL(url, host) {
+  // No proxy for plain hostnames
+  if (isPlainHostName(host))
+    return "DIRECT";
+
+  // No proxy for local domain
+  if (dnsDomainIs(host, ".manicminer.io"))
+    return "DIRECT";
+
+  // Ignore proxy if destination is unresolvable (better browser errors)
+  if (!isResolvable(host))
+    return "DIRECT";
+
+  // Only cache http, https, ftp and gopher
+  if (url.substring(0, 5) == "http:" || url.substring(0, 6) == "https:" || url.substring(0, 4) == "wss:" || url.substring(0, 4) == "ftp:" || url.substring(0, 7) == "gopher:")
+    return "PROXY squid.manicminer.io:3128";
+
+  return "DIRECT";
+}
+
+// vim: set ft=javascript ts=2 sts=2 sw=2 et:

@@ -1,0 +1,52 @@
+---
+
+- apt:
+    name:
+      - squid
+      - squidclient
+      - squid-purge
+    state: present
+
+- file:
+    path: /srv/squid/cache
+    owner: proxy
+    group: proxy
+    state: directory
+
+- shell:
+    cmd: systemctl stop squid && squid -z
+    creates: /srv/squid/cache/00
+
+- copy:
+    src: games.txt
+    dest: /etc/squid/games.txt
+  notify: reload-squid
+
+- copy:
+    src: school.txt
+    dest: /etc/squid/school.txt
+  notify: reload-squid
+
+- template:
+    src: squid.conf.j2
+    dest: /etc/squid/squid.conf
+  notify: reload-squid
+
+- template:
+    src: site.conf.j2
+    dest: /etc/squid/conf.d/site.conf
+  notify: reload-squid
+
+- template:
+    src: debian.conf.j2
+    dest: /etc/squid/conf.d/debian.conf
+  notify: reload-squid
+
+- service:
+    name: squid
+    state: started
+    enabled: yes
+
+- include_tasks: web.yml
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:
