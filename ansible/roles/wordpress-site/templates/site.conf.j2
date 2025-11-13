@@ -1,4 +1,7 @@
 {{ domain_name }} {
+{% if redirect_to %}
+	redir {{ redirect_to }} temporary
+{% else %}
 	root * /var/www/{{ site_name }}/wordpress
 
 	tls tom@bamford.io
@@ -8,12 +11,14 @@
 		format console
 	}
 
+{% if admin_ip_restricted %}
 	@admin_denied {
 		path /wp-admin/*
 		not path /wp-admin/admin-ajax.php
 		not path /wp-admin/theme-editor.php
 		not remote_ip 127.0.0.0/8 {{ wordpress_admin_allowed_networks | join(' ') }}
 	}
+{% endif %}
 
 	@disallowed {
 		#path /xmlrpc.php
@@ -26,7 +31,9 @@
 		not path /.well-known/*
 	}
 
+{% if admin_ip_restricted %}
 	respond @admin_denied 403
+{% endif %}
 	respond @disallowed 403
 	respond @dotfiles 403
 
@@ -40,6 +47,7 @@
 	php_fastcgi unix///run/php/php{{ php_version }}-fpm.sock {
 		capture_stderr
 	}
+{% endif %}
 }
 
 www.{{ domain_name }} {
@@ -56,4 +64,4 @@ www.{{ domain }} {
 }
 {% endfor %}
 
-# vim: set ft=Caddyfile ts=4 sts=4 sw=4:
+# vim: set ft=Caddyfile ts=4 sts=4 sw=4 noet:

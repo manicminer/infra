@@ -3,6 +3,8 @@ db_password:
 domain_name:
 site_name:
 additional_domains: []
+admin_ip_restricted: true
+redirect_to:
 
 php_version: 8.2
 wordpress_version: 6.6.2
