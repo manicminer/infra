@@ -48,7 +48,6 @@
           - python3-debian
           - python3-pip
           - rsync
-          - software-properties-common
           - sudo
           - telnet
           - tree

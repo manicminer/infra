@@ -1,0 +1,49 @@
+---
+- hosts: mariadb
+  roles:
+    - role: tls
+      tags: tls
+
+    - role: mariadb
+      tags: mariadb
+
+    - role: caddy
+      tags: caddy
+      enable_fqdn_static: true
+
+    - role: php
+      tags: php
+      php_version: 8.4
+
+    - role: phpmyadmin
+      tags: phpmyadmin
+      php_version: 8.4
+
+
+- hosts: mariadb
+  tags: mariadb
+  tasks:
+    - community.mysql.mysql_db:
+        name: nextcloud
+        state: present
+      tags: nextcloud
+
+    - community.mysql.mysql_user:
+        name: nextcloud
+        host: "{{ item }}"
+        password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          39666332313538636266313436646538336532356664326464383032393066373737616261653839
+          6361323035363233383263383463386537616231656563620a373131323963613138633662316266
+          66346231656161356135356232363631616166643337386233333835643439663435613737376430
+          3130376661373131340a386132323163393235326237646138363764653537326361363437626366
+          66616265376432343166626662663937306535336438356366666330396238393834
+        priv: "nextcloud.*:ALL"
+      tags: nextcloud
+      loop:
+        - "10.20.0.38"
+        - "fd6d:616e:6963:20:be24:11ff:fe1e:de56"
+        - "fe80::be24:11ff:fe1e:de56"
+
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -1,0 +1,54 @@
+---
+
+- ansible.builtin.user:
+    name: nextcloud
+    home: "{{ home_dir }}"
+    create_home: true
+    groups:
+      - docker
+      - warehouse
+    append: true
+    shell: /bin/bash
+    system: true
+  register: nextcloud_user
+
+- ansible.builtin.set_fact:
+    nextcloud_uid: "{{ nextcloud_user.uid }}"
+    nextcloud_gid: 14384
+
+- block:
+    - ansible.builtin.file:
+        path: "{{ home_dir }}/docker"
+        mode: '0755'
+        state: directory
+
+    - ansible.builtin.file:
+        path: "{{ nextcloud.data_dir }}/data"
+        mode: '0755'
+        state: directory
+
+    - ansible.builtin.template:
+        src: docker-compose.yml.j2
+        dest: "{{ home_dir }}/docker/docker-compose.yml"
+        mode: '0644'
+      notify: restart-nextcloud
+
+  become: true
+  become_user: nextcloud
+
+- template:
+    src: nextcloud.service.j2
+    dest: /etc/systemd/system/nextcloud.service
+  register: nextcloud_service
+  notify: restart-nextcloud
+
+- shell:
+    cmd: systemctl daemon-reload
+  when: nextcloud_service.changed
+
+- service:
+    name: nextcloud
+    enabled: yes
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

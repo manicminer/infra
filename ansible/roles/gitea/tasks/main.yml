@@ -13,7 +13,6 @@
     mode: '0750'
   loop:
     - /etc/gitea
-    - /var/lib/gitea
 
 - ansible.builtin.get_url:
     url: "https://github.com/go-gitea/gitea/releases/download/v{{ gitea_version }}/gitea-{{ gitea_version }}-linux-amd64"

@@ -1,7 +1,7 @@
 APP_NAME = Gitea
 RUN_USER = git
 RUN_MODE = prod
-WORK_PATH = /var/lib/gitea
+WORK_PATH = /mnt/warehouse/gitea
 
 [oauth2]
 JWT_SECRET = {{ jwt_secret }}
@@ -36,10 +36,10 @@ PASSWD = {{ db_password }}
 SCHEMA =
 SSL_MODE = disable
 CHARSET = utf8
-PATH = /var/lib/gitea/data/gitea.db
+PATH = /mnt/warehouse/gitea/data/gitea.db
 
 [repository]
-ROOT = /var/lib/gitea/repositories
+ROOT = /mnt/warehouse/gitea/repositories
 DEFAULT_BRANCH = main
 DEFAULT_PRIVATE = private
 ENABLE_PUSH_CREATE_USER = true
@@ -78,7 +78,7 @@ PROVIDER = file
 [log]
 MODE = file
 LEVEL = info
-ROOT_PATH = /var/lib/gitea/log
+ROOT_PATH = /mnt/warehouse/gitea/log
 
 [ui]
 DEFAULT_THEME = gitea-auto
@@ -93,6 +93,6 @@ ENABLED = true
 ENABLED = true
 
 [lfs]
-PATH = /var/lib/gitea/data/lfs
+PATH = /mnt/warehouse/gitea/data/lfs
 
 # vim: set ft=ini ts=2 sts=2 sw=2 et:

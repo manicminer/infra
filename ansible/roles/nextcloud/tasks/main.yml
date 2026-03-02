@@ -1,0 +1,60 @@
+---
+
+- ansible.builtin.file:
+    path: /root/nextcloud
+    state: directory
+
+- ansible.builtin.get_url:
+    url: "https://download.nextcloud.com/server/releases/nextcloud-{{ nextcloud_version }}.zip"
+    dest: "/root/nextcloud/nextcloud-{{ nextcloud_version }}.zip"
+
+- ansible.builtin.file:
+    path: "{{ item }}"
+    owner: www-data
+    recurse: true
+    state: directory
+  loop:
+    - /mnt/warehouse/nextcloud/data
+    - /var/log/nextcloud
+
+- ansible.builtin.unarchive:
+    src: "/root/nextcloud/nextcloud-{{ nextcloud_version }}.zip"
+    dest: "/var/www"
+    owner: www-data
+    group: www-data
+    remote_src: true
+    creates: "/var/www/nextcloud/index.php"
+
+- ansible.builtin.template:
+    src: site.conf.j2
+    dest: "/etc/apache2/sites-available/nextcloud.conf"
+  notify: restart-apache2
+
+- ansible.builtin.file:
+    src: ../sites-available/nextcloud.conf
+    dest: /etc/apache2/sites-enabled/nextcloud.conf
+    state: link
+  notify: restart-apache2
+
+- ansible.builtin.file:
+    path: /var/log/nextcloud
+    state: directory
+    owner: www-data
+    group: www-data
+
+- ansible.builtin.template:
+    src: logrotate.j2
+    dest: /etc/logrotate.d/nextcloud"
+    owner: root
+    group: root
+    mode: '0644'
+
+- ansible.builtin.cron:
+    name: "nextcloud-cron"
+    user: www-data
+    minute: "*/5"
+    job: "php /var/www/nextcloud/cron.php 2>&1 1>/dev/null"
+    state: present
+
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

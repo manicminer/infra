@@ -3,6 +3,7 @@
 - ansible.builtin.apt_repository:
     repo: "ppa:ondrej/php"
     state: present
+  when: ansible_distribution == 'Ubuntu'
 
 - ansible.builtin.apt:
     name:
@@ -12,12 +13,17 @@
       - "php{{ php_version }}-bcmath"
       - "php{{ php_version }}-curl"
       - "php{{ php_version }}-gd"
+      - "php{{ php_version }}-gmp"
       - "php{{ php_version }}-igbinary"
       - "php{{ php_version }}-imagick"
       - "php{{ php_version }}-intl"
       - "php{{ php_version }}-mbstring"
+      - "php{{ php_version }}-memcache"
+      - "php{{ php_version }}-memcached"
       - "php{{ php_version }}-mysql"
       - "php{{ php_version }}-opcache"
+      - "php{{ php_version }}-pgsql"
+      - "php{{ php_version }}-redis"
       - "php{{ php_version }}-soap"
       - "php{{ php_version }}-xml"
       - "php{{ php_version }}-zip"
@@ -46,7 +52,7 @@
     backrefs: true
     firstmatch: true
   loop: "{{ config | dict2items }}"
-  notify: "restart-php-fpm-{{ php_version }}"
+  notify: restart-php-fpm
   vars:
     config:
       pm.max_children: 128
@@ -61,11 +67,13 @@
     backrefs: true
     firstmatch: true
   loop: "{{ config | dict2items }}"
-  notify: "restart-php-fpm-{{ php_version }}"
+  notify: restart-php-fpm
   vars:
     config:
       error_log: "/var/log/php/{{ php_version }}/error.log"
       log_errors: "on"
+      max_execution_time: "{{ php_settings.max_execution_time }}"
+      max_input_time: "{{ php_settings.max_input_time }}"
       max_input_vars: 10000
       memory_limit: 1024M
       opcache.enable: 1
@@ -74,8 +82,8 @@
       opcache.max_accelerated_files: 500000
       opcache.memory_consumption: 2048
       opcache.revalidate_freq: 60
-      post_max_size: 512M
-      upload_max_filesize: 512M
+      post_max_size: "{{ php_settings.post_max_size }}"
+      upload_max_filesize: "{{ php_settings.upload_max_filesize }}"
       user_ini.filename: '".user.ini"'
 
 - ansible.builtin.service:

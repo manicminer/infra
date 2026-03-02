@@ -1,0 +1,20 @@
+---
+services:
+  nextcloud:
+    image: nextcloud:{{ nextcloud_version }}-apache
+    user: "{{ nextcloud_uid }}:{{ nextcloud_gid }}"
+    environment:
+      - POSTGRES_HOST={{ nextcloud.postgres_host }}
+      - POSTGRES_DB={{ nextcloud.postgres_db }}
+      - POSTGRES_USER={{ nextcloud.postgres_user }}
+      - POSTGRES_PASSWORD={{ nextcloud.postgres_pass }}
+      - TRUSTED_PROXIES=172.17.0.1/16
+    ports:
+      - 127.0.0.1:8080:80
+    restart: always
+    volumes:
+      - type: bind
+        source: {{ nextcloud.data_dir }}/data
+        target: /var/www/html
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

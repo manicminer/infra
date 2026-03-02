@@ -1,0 +1,36 @@
+---
+
+- ansible.builtin.apt:
+    name:
+      - apache2
+    state: present
+    update_cache: true
+
+- ansible.builtin.shell:
+    cmd: "a2enmod {{ item }}"
+    creates: "/etc/apache2/mods-enabled/{{ item }}.load"
+  loop:
+    - dir
+    - env
+    - headers
+    - mime
+    - proxy
+    - proxy_fcgi
+    - proxy_http
+    - proxy_wstunnel
+    - rewrite
+    - setenvif
+    - ssl
+  notify: restart-apache2
+
+- ansible.builtin.file:
+    path: /etc/apache2/sites-enabled/000-default.conf
+    state: absent
+  notify: restart-apache2
+
+- ansible.builtin.service:
+    name: apache2
+    enabled: true
+    state: started
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

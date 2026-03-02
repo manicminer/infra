@@ -21,10 +21,9 @@
     state: present
     update_cache: true
 
-- ansible.builtin.get_url:
-    url: "https://github.com/docker/compose/releases/download/v2.20.3/docker-compose-{{ ansible_facts['system'] }}-{{ ansible_facts['architecture'] }}"
-    dest: /usr/local/bin/docker-compose
-    mode: "0755"
+- ansible.builtin.file:
+    path: /usr/local/bin/docker-compose
+    state: absent
 
 - ansible.builtin.service:
     name: docker

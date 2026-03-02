@@ -1,4 +1,10 @@
 ---
 php_version: 8.2
 
+php_settings:
+  max_execution_time: 60
+  max_input_time: 60
+  post_max_size: 512M
+  upload_max_filesize: 512M
+
 # vim: set ft=yaml ts=2 sts=2 sw=2 et:

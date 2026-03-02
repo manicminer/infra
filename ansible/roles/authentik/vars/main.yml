@@ -1,9 +1,9 @@
 ---
 
-authentik_version: "2025.8.4"
+authentik_version: "2026.2.0"
 
 authentik:
-  postgres_host: 10.150.0.21
+  postgres_host: postgres.manicminer.io
   postgres_db: authentik
   postgres_user: authentik
   postgres_pass: !vault |

@@ -1,0 +1,44 @@
+<VirtualHost *:80>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP_HOST} !^(localhost|127.0.0.1)
+  RewriteRule ^/(.*) https://%{SERVER_NAME}/$1 [R,L]
+</VirtualHost>
+
+<VirtualHost *:443>
+  DocumentRoot /var/www/nextcloud/
+  ServerName {{ nextcloud.domain }}
+
+  SSLEngine on
+  SSLCertificateFile /etc/ssl/manicminer/manicminer.pem
+  SSLCertificateKeyFile /etc/ssl/manicminer/manicminer.key
+  SSLCertificateChainFile /etc/ssl/manicminer/chain.pem
+
+  Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"
+
+  <Directory /var/www/nextcloud/>
+    Require all granted
+    AllowOverride All
+    Options FollowSymLinks MultiViews
+
+    <IfModule mod_dav.c>
+      Dav off
+    </IfModule>
+  </Directory>
+
+  ProxyFCGIBackendType FPM
+  <FilesMatch "\.php$">
+    SetHandler "proxy:unix:/run/php/php8.3-fpm.sock|fcgi://localhost/"
+  </FilesMatch>
+
+  <Proxy "fcgi://localhost/" enablereuse=on max=10>
+  </Proxy>
+
+  <FilesMatch remote.php>
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+  </FilesMatch>
+
+  ProxyPass /push/ws ws://127.0.0.1:7867/ws
+  ProxyPass /push/ http://127.0.0.1:7867/
+  ProxyPassReverse /push/ http://127.0.0.1:7867/
+</VirtualHost>

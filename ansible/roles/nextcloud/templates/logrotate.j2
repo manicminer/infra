@@ -1,0 +1,10 @@
+# Log rotation for Nextcloud
+/var/log/nextcloud/*.log {
+  rotate 6
+  weekly
+  missingok
+  notifempty
+  compress
+  delaycompress
+  sharedscripts
+}

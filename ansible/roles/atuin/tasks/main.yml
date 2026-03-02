@@ -1,0 +1,55 @@
+---
+
+- ansible.builtin.user:
+    name: atuin
+    create_home: true
+    groups: docker
+    append: true
+    shell: /bin/bash
+    system: true
+  register: atuin_user
+
+- ansible.builtin.set_fact:
+    atuin_uid: "{{ atuin_user.uid }}"
+
+- ansible.builtin.file:
+    path: "{{ item }}"
+    owner: atuin
+    group: atuin
+    state: directory
+  loop:
+    - /home/atuin/atuin
+    - /home/atuin/atuin/config
+
+- ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: /home/atuin/atuin/docker-compose.yml
+    owner: atuin
+    group: atuin
+  notify: restart-atuin
+
+- ansible.builtin.template:
+    src: env.j2
+    dest: /home/atuin/atuin/.env
+    owner: atuin
+    group: docker
+    mode: '0640'
+  notify: restart-atuin
+
+- ansible.builtin.template:
+    src: atuin.service.j2
+    dest: /etc/systemd/system/atuin.service
+  register: atuin_service
+  notify: restart-atuin
+
+- ansible.builtin.shell:
+    cmd: systemctl daemon-reload
+  when: atuin_service.changed
+
+- ansible.builtin.service:
+    name: atuin
+    enabled: yes
+    state: started
+
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

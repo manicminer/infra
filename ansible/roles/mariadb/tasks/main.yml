@@ -3,7 +3,7 @@
 - ansible.builtin.deb822_repository:
     name: mariadb
     types: deb
-    uris: "https://dlm.mariadb.com/repo/mariadb-server/{{ mariadb_version }}/repo/{{ ansible_facts['distribution'] | lower }}"
+    uris: "https://deb.mariadb.org/{{ mariadb_version }}/debian"
     suites: "{{ ansible_facts['distribution_release'] }}"
     components: main
     architectures: amd64
@@ -23,8 +23,12 @@
 
 - community.mysql.mysql_user:
     name: root
+    host: "{{ item }}"
     password: "{{ mariadb_root_password }}"
     check_implicit_admin: true
+  loop:
+    - localhost
+    - 127.0.0.1
 
 - ansible.builtin.copy:
     dest: /root/.my.cnf
@@ -35,6 +39,17 @@
       [client]
       password = {{ mariadb_root_password }}
 
+- ansible.builtin.lineinfile:
+    path: "/etc/mysql/mariadb.conf.d/50-server.cnf"
+    regexp: "^#?{{ item.key }}([ ]*)=([ ]*)"
+    line: "{{ item.key }} = {{ item.value }}"
+    backrefs: true
+    firstmatch: true
+  loop: "{{ config | dict2items }}"
+  notify: restart-mariadb
+  vars:
+    config:
+      bind-address: "*"
 
 
 # vim: set ft=yaml ts=2 sts=2 sw=2 et:

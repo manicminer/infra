@@ -36,6 +36,13 @@
     group: ssl-cert
     mode: '0640'
 
+- ansible.builtin.template:
+    src: combined.pem.j2
+    dest: /etc/ssl/manicminer/fullchain.pem
+    owner: root
+    group: ssl-cert
+    mode: '0640'
+
 - ansible.builtin.shell:
     cmd: "openssl pkcs12 -inkey manicminer.key -in fullchain.pem -export -passout pass: -out manicminer.pfx"
     chdir: /etc/ssl/manicminer

@@ -1,0 +1,15 @@
+---
+
+- ansible.builtin.apt:
+    name:
+      - redis
+      - redis-server
+      - redis-tools
+    state: present
+
+- ansible.builtin.service:
+    name: redis-server
+    state: started
+    enabled: yes
+
+# vim: set ft=yaml ts=2 sts=2 sw=2 et:

@@ -36,6 +36,26 @@
         role_attr_flags: SUPERUSER
 
     - community.postgresql.postgresql_user:
+        name: atuin
+        password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          31333737616265366136616432383536306164663432303465333561383031616435396361323465
+          3162616630386566643533353732656134643861336261650a303564653430386530326330343462
+          31333936663963646435343838366165336264303264353466623530643064396663626666633730
+          3539613338363362340a613133343535326463383864333362313631393733613534643230633834
+          32613635393034383864356337323566653330363265346465633731303166613433
+      tags: atuin
+
+    - community.postgresql.postgresql_db:
+        name: atuin
+        owner: atuin
+        template: template0
+        encoding: UTF8
+        lc_collate: en_US.UTF-8
+        lc_ctype: en_US.UTF-8
+      tags: atuin
+
+    - community.postgresql.postgresql_user:
         name: authentik
         password: !vault |
           $ANSIBLE_VAULT;1.1;AES256
@@ -76,6 +96,26 @@
       tags: n8n
 
     - community.postgresql.postgresql_user:
+        name: nextcloud
+        password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          36616464303765396539303634323661383062373361386234313236653461636266316134346131
+          6434656234306138653136656237623836303239646566610a633238376362383337626533306465
+          61376362366464646137363262613535343066623965323837666666383464663666383439626261
+          6166636166313835330a653962636635386338326536613162366531313035643765313639316135
+          63626561626536326163396237303531653030653731643932306232623037656533
+      tags: nextcloud
+
+    - community.postgresql.postgresql_db:
+        name: nextcloud
+        owner: nextcloud
+        template: template0
+        encoding: UTF8
+        lc_collate: en_US.UTF-8
+        lc_ctype: en_US.UTF-8
+      tags: nextcloud
+
+    - community.postgresql.postgresql_user:
         name: shill
         password: !vault |
           $ANSIBLE_VAULT;1.1;AES256
@@ -93,54 +133,5 @@
         lc_collate: en_US.UTF-8
         lc_ctype: en_US.UTF-8
 
-
-- hosts: postgres2
-  tags: postgres
-  become: yes
-  become_user: postgres
-  tasks:
-    - community.postgresql.postgresql_user:
-        name: pgadmin
-        role_attr_flags: SUPERUSER
-
-    - community.postgresql.postgresql_user:
-        name: authentik
-        password: !vault |
-          $ANSIBLE_VAULT;1.1;AES256
-          63633764333630323466393733356430343137633866363831663632643861343435376333363832
-          3665336636383564643465653266386463333566313663630a646339373562393063643331653164
-          37323965303136343031616163346538386165316266663136666666303535373365313661373464
-          3466393235356666330a613030323037613737623238613330323162323035386161306265396234
-          65303737666165643334373639353834393337643637363333636131313561323163
-      tags: authentik
-
-    - community.postgresql.postgresql_db:
-        name: authentik
-        owner: authentik
-        template: template0
-        encoding: UTF8
-        lc_collate: en_US.UTF-8
-        lc_ctype: en_US.UTF-8
-      tags: authentik
-
-    - community.postgresql.postgresql_user:
-        name: omnivore
-        password: !vault |
-          $ANSIBLE_VAULT;1.1;AES256
-          38383864353939616361333834336539623064313063373036316635643936376532613130376330
-          3364623338303436336464653565313936653035643031630a666562323930653139666139653133
-          36363031343566386262323463323538663763343766306333313833643766343834363063343764
-          3339303731313665370a316633613230346635333662353839613630333265396662373530306639
-          64313238616339643666356331383236633639393037383639303262653935636237
-      tags: omnivore
-
-    - community.postgresql.postgresql_db:
-        name: omnivore
-        owner: omnivore
-        template: template0
-        encoding: UTF8
-        lc_collate: en_US.UTF-8
-        lc_ctype: en_US.UTF-8
-      tags: omnivore
 
 # vim: set ft=yaml ts=2 sts=2 sw=2 et:

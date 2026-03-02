@@ -7,12 +7,21 @@
     append: true
     shell: /bin/bash
     system: true
+  register: authentik_user
+
+- ansible.builtin.set_fact:
+    authentik_uid: "{{ authentik_user.uid }}"
 
 - file:
-    path: /home/authentik/authentik
+    path: "{{ item }}"
     owner: authentik
     group: authentik
     state: directory
+  loop:
+    - /home/authentik/authentik
+    - /home/authentik/authentik/certs
+    - /home/authentik/authentik/custom-templates
+    - /home/authentik/authentik/media
 
 - template:
     src: docker-compose.yml.j2
@@ -28,27 +37,6 @@
     group: docker
     mode: '0640'
   notify: restart-authentik
-
-#- apt:
-#    pkg: python3-docker
-#    state: latest
-#
-#- pip:
-#    name: docker-compose
-#    state: present
-#
-#- community.docker.docker_compose:
-#    project_src: /home/authentik/authentik
-#    state: present
-#  become: yes
-#  become_user: authentik
-#  register: docker_compose
-
-#- shell:
-#    cmd: docker-compose up -d
-#    chdir: /home/authentik/authentik
-#  become: yes
-#  become_user: authentik
 
 - template:
     src: authentik.service.j2

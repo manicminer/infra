@@ -2,45 +2,30 @@
 version: '3.4'
 
 services:
-  redis:
-    image: docker.io/library/redis:alpine
-    command: --save 60 1 --loglevel warning
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-      start_period: 20s
-      interval: 30s
-      retries: 5
-      timeout: 3s
-    volumes:
-      - redis:/data
   server:
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2022.9.0}
     restart: always
     command: server
     environment:
-      AUTHENTIK_REDIS__HOST: redis
       AUTHENTIK_POSTGRESQL__HOST: {{ authentik.postgres_host }}
       AUTHENTIK_POSTGRESQL__USER: {{ authentik.postgres_user }}
       AUTHENTIK_POSTGRESQL__NAME: {{ authentik.postgres_db }}
       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
       # AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
-    volumes:
-      - ./media:/media
-      - ./custom-templates:/templates
-      - geoip:/geoip
     env_file:
       - .env
     ports:
       - "0.0.0.0:${AUTHENTIK_PORT_HTTP:-9000}:9000"
-    depends_on:
-      - redis
+    user: {{ authentik_uid }}:authentik
+    volumes:
+      - ./media:/media
+      - ./custom-templates:/templates
+      - geoip:/geoip
   worker:
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2022.9.0}
     restart: always
     command: worker
     environment:
-      AUTHENTIK_REDIS__HOST: redis
       AUTHENTIK_POSTGRESQL__HOST: {{ authentik.postgres_host }}
       AUTHENTIK_POSTGRESQL__USER: {{ authentik.postgres_user }}
       AUTHENTIK_POSTGRESQL__NAME: {{ authentik.postgres_db }}
@@ -58,8 +43,6 @@ services:
       - geoip:/geoip
     env_file:
       - .env
-    depends_on:
-      - redis
   geoipupdate:
     image: "maxmindinc/geoipupdate:latest"
     volumes:
@@ -71,10 +54,6 @@ services:
       - .env
 
 volumes:
-#  database:
-#    driver: local
-  redis:
-    driver: local
   geoip:
     driver: local
 

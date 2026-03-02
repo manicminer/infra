@@ -46,7 +46,7 @@
   tags: photoprism
   tasks:
     - shell:
-        cmd: docker-compose pull
+        cmd: docker compose pull
         chdir: /mnt/photos/photoprism/photoprism
       become: yes
       become_user: photoprism
