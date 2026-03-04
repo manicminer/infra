@@ -39,6 +39,14 @@
       tags: php
       php_version: 8.2
 
+    - role: php
+      tags: php
+      php_version: 8.3
+
+    - role: php
+      tags: php
+      php_version: 8.4
+
     - role: caddy
       tags: caddy
       enable_fqdn_static: true
@@ -79,7 +87,7 @@
         3165346137616366650a336233386536366661366539316232363335643664613762633833376530
         37383162373735616537613130303762373661613731386435663062623266613231
       domain_name: manicminer.io
-      php_version: 8.2
+      php_version: 8.3
       site_name: manicminer
 
   tasks:

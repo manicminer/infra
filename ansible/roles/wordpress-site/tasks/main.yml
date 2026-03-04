@@ -80,7 +80,7 @@
     insertbefore: BOF
     create: true
   loop: "{{ config | dict2items }}"
-  notify: "restart-php-fpm-{{ php_version }}"
+  notify: restart-php-fpm
   vars:
     config:
       error_log: "/var/log/php/{{ php_version }}/error.{{ site_name }}.log"

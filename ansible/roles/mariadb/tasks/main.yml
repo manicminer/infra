@@ -3,7 +3,7 @@
 - ansible.builtin.deb822_repository:
     name: mariadb
     types: deb
-    uris: "https://deb.mariadb.org/{{ mariadb_version }}/debian"
+    uris: "https://deb.mariadb.org/{{ mariadb_version }}/{{ ansible_facts['distribution'] | lower }}"
     suites: "{{ ansible_facts['distribution_release'] }}"
     components: main
     architectures: amd64
