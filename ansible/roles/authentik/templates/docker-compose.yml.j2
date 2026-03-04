@@ -18,8 +18,8 @@ services:
       - "0.0.0.0:${AUTHENTIK_PORT_HTTP:-9000}:9000"
     user: {{ authentik_uid }}:authentik
     volumes:
-      - ./media:/media
       - ./custom-templates:/templates
+      - ./data:/data
       - geoip:/geoip
   worker:
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2022.9.0}
@@ -36,10 +36,10 @@ services:
     # - The docker socket can't be accessed anymore
     user: root
     volumes:
-      - ./media:/media
       - ./certs:/certs
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/data
       - ./custom-templates:/templates
+      - /var/run/docker.sock:/var/run/docker.sock
       - geoip:/geoip
     env_file:
       - .env

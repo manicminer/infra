@@ -21,7 +21,7 @@
     - /home/authentik/authentik
     - /home/authentik/authentik/certs
     - /home/authentik/authentik/custom-templates
-    - /home/authentik/authentik/media
+    - /home/authentik/authentik/data
 
 - template:
     src: docker-compose.yml.j2
