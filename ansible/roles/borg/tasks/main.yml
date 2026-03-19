@@ -19,10 +19,28 @@
     mode: '0600'
 
 - ansible.builtin.template:
+    src: bitwarden-backup.sh.j2
+    dest: /root/bin/bitwarden-backup.sh
+    mode: '0700'
+  when: "'bitwarden' in scripts"
+
+- ansible.builtin.template:
+    src: mariadb-backup.sh.j2
+    dest: /root/bin/mariadb-backup.sh
+    mode: '0700'
+  when: "'mariadb' in scripts"
+
+- ansible.builtin.template:
     src: nextcloud-backup.sh.j2
     dest: /root/bin/nextcloud-backup.sh
     mode: '0700'
   when: "'nextcloud' in scripts"
+
+- ansible.builtin.template:
+    src: postgres-backup.sh.j2
+    dest: /root/bin/postgres-backup.sh
+    mode: '0700'
+  when: "'postgres' in scripts"
 
 - ansible.builtin.template:
     src: wordpress-backup.sh.j2

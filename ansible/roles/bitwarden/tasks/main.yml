@@ -82,4 +82,11 @@
   become_user: bitwarden
   notify: restart-bitwarden
 
+- ansible.builtin.cron:
+    name: bitwarden-backup
+    minute: "0"
+    hour: "1"
+    job: /root/bin/bitwarden-backup.sh
+    state: present
+
 # vim: set ft=yaml ts=2 sts=2 sw=2 et:

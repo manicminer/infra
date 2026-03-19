@@ -1,0 +1,12 @@
+#!/bin/bash
+
+today="$(date -Iseconds)"
+
+source "${HOME}/.borg-env"
+
+set -e
+
+borg create "{{ borg_archive_root }}/bitwarden::${today}" /opt/bitwarden/bwdata
+borg prune "{{ borg_archive_root }}/bitwarden" --keep-daily=7 --keep-weekly=4 --keep-monthly=6
+
+exit 0

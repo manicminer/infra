@@ -4,6 +4,11 @@
     - role: tls
       tags: tls
 
+    - role: borg
+      tags: borg
+      scripts:
+        - mariadb
+
     - role: mariadb
       tags: mariadb
 

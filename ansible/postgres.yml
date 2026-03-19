@@ -16,6 +16,14 @@
 
 - hosts: postgres,postgres2
   roles:
+    - role: borg
+      tags: borg
+      scripts:
+        - postgres
+
+    - role: tls
+      tags: tls
+
     - role: letsencrypt-certs
       tags: letsencrypt-certs
 

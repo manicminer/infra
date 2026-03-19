@@ -1,0 +1,21 @@
+#!/bin/bash
+
+dump_dir="/backups"
+today="$(date -Iseconds)"
+
+source "${HOME}/.borg-env"
+
+set -e
+
+rm -r "${dump_dir}"
+mkdir -p "${dump_dir}"
+chown postgres "${dump_dir}"
+
+sudo -u postgres psql -tc 'SELECT datname FROM pg_database WHERE NOT datistemplate;' | sort -b | grep -v '^$' | while read db_name; do
+  sudo -u postgres pg_dump -F directory -Z none -f "${dump_dir}"/"${db_name}" "${db_name}"
+done
+
+borg create "{{ borg_archive_root }}/postgres::${today}" "${dump_dir}"
+borg prune "{{ borg_archive_root }}/postgres" --keep-daily=7 --keep-weekly=4 --keep-monthly=6
+
+exit 0

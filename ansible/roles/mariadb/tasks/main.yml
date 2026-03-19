@@ -51,5 +51,11 @@
     config:
       bind-address: "*"
 
+- ansible.builtin.cron:
+    name: mariadb-backup
+    minute: "30"
+    hour: "2"
+    job: /root/bin/mariadb-backup.sh
+    state: present
 
 # vim: set ft=yaml ts=2 sts=2 sw=2 et:

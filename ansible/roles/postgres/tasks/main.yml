@@ -58,6 +58,13 @@
     enabled: yes
     state: started
 
+- ansible.builtin.cron:
+    name: postgres-backup
+    minute: "30"
+    hour: "2"
+    job: /root/bin/postgres-backup.sh
+    state: present
+
 - include_tasks: pgadmin.yml
 
 # vim: set ft=yaml ts=2 sts=2 sw=2 et:

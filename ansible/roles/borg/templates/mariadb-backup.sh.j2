@@ -1,0 +1,18 @@
+#!/bin/bash
+
+dump_dir="/root/mariadb"
+today="$(date -Iseconds)"
+
+source "${HOME}/.borg-env"
+
+set -e
+
+mkdir -p "${dump_dir}"
+mariadb -Nse 'show databases' | grep -v '_schema$' | while read db_name; do
+  mariadb-dump "${db_name}" >"${dump_dir}"/"${db_name}.sql"
+done
+
+borg create "{{ borg_archive_root }}/mariadb::${today}" "${dump_dir}"
+borg prune "{{ borg_archive_root }}/mariadb" --keep-daily=7 --keep-weekly=4 --keep-monthly=6
+
+exit 0
