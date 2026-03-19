@@ -9,6 +9,8 @@
 
     - role: borg
       tags: borg
+      scripts:
+        - wordpress
 
     - role: clamav
       tags: clamav

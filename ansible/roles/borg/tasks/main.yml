@@ -4,23 +4,30 @@
       - borg_archive_root != ""
       - borg_passphrase != ""
 
-- ansible.builtin.apt_repository:
-    repo: "ppa:costamagnagianfranco/borgbackup"
-    state: present
-    update_cache: yes
+#- ansible.builtin.apt_repository:
+#    repo: "ppa:costamagnagianfranco/borgbackup"
+#    state: present
+#    update_cache: yes
 
 - ansible.builtin.apt:
     name: borgbackup
     state: present
 
 - ansible.builtin.template:
-    src: borg-passphrase.j2
-    dest: /root/.borg-passphrase
+    src: borg-env.j2
+    dest: /root/.borg-env
     mode: '0600'
+
+- ansible.builtin.template:
+    src: nextcloud-backup.sh.j2
+    dest: /root/bin/nextcloud-backup.sh
+    mode: '0700'
+  when: "'nextcloud' in scripts"
 
 - ansible.builtin.template:
     src: wordpress-backup.sh.j2
     dest: /root/bin/wordpress-backup.sh
     mode: '0700'
+  when: "'wordpress' in scripts"
 
 # vim: set ft=yaml ts=2 sts=2 sw=2 et:

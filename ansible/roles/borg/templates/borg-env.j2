@@ -1,0 +1,4 @@
+export BORG_PASSPHRASE="{{ borg_passphrase }}"
+{% if borg_remote_path | default('') != '' %}
+export BORG_REMOTE_PATH="{{ borg_remote_path }}"
+{% endif %}

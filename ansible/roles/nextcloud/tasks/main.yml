@@ -1,4 +1,8 @@
 ---
+- assert:
+    that:
+      - borg_archive_root != ""
+      - borg_passphrase != ""
 
 - ansible.builtin.file:
     path: /root/nextcloud
@@ -11,7 +15,6 @@
 - ansible.builtin.file:
     path: "{{ item }}"
     owner: www-data
-    recurse: true
     state: directory
   loop:
     - /mnt/warehouse/nextcloud/data
@@ -54,6 +57,13 @@
     user: www-data
     minute: "*/5"
     job: "php /var/www/nextcloud/cron.php 2>&1 1>/dev/null"
+    state: present
+
+- ansible.builtin.cron:
+    name: nextcloud-backup
+    minute: 0
+    hour: "3"
+    job: /root/bin/nextcloud-backup.sh
     state: present
 
 

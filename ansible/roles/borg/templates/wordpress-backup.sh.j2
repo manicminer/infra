@@ -11,12 +11,13 @@ tmp_dir="$(mktemp -d)"
 sql_dump_file="${tmp_dir}/${db_name}.sql"
 today="$(date -Iseconds)"
 
-source "${HOME}/.borg-passphrase"
+source "${HOME}/.borg-env"
 
 set -e
 
 mariadb-dump "${db_name}" >"${sql_dump_file}"
-borg create "{{ borg_archive_root }}${site_name}::${today}" "${sql_dump_file}" "/var/www/${site_name}"
+borg create "{{ borg_archive_root }}/${site_name}::${today}" "${sql_dump_file}" "/var/www/${site_name}"
+borg prune "{{ borg_archive_root }}/${site_name}" --keep-daily=7 --keep-weekly=4 --keep-monthly=6
 
 rm -r "${tmp_dir}"
 

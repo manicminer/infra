@@ -4,6 +4,11 @@
     - role: tls
       tags: tls
 
+    - role: borg
+      tags: borg
+      scripts:
+        - nextcloud
+
     - role: redis
       tags: redis
 
